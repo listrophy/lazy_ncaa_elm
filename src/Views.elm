@@ -1,19 +1,19 @@
 module Views exposing (view)
 
-import Tuple
 import Html exposing (Html)
 import Html.Attributes as A
+import List.Extra as List
 import Messages exposing (Msg)
 import Models exposing (Appearance, Appearance(..), Game, Model, Team)
+import TreeTransform
 
 import List.Extra as List
 
 view : Model -> Html Msg
 view model =
   let
-      levels =
-        parseBracket [] model.bracket
-      _ = Debug.log "levels" <| levels
+      levels = TreeTransform.transform model.bracket
+      -- _ = Debug.log "levels" <| levels
   in
     Html.main_ [A.id "tournament"]
       ([ Html.node "link" [ A.href "/style.css", A.rel "stylesheet"] []
