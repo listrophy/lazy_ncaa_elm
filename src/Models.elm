@@ -28,7 +28,6 @@ type alias Game =
 type Appearance
   = Winner Game
   | Seeded Team
-  | Ignore
 
 type alias Team =
   { name : String
@@ -131,6 +130,27 @@ seedLookup int =
       15 -> 2
       16 -> 15
       _ -> 0
+
+positionLookup : Int -> GameLocation
+positionLookup seed =
+  case seed of
+    1  -> [Up, Up, Up, Up]
+    16 -> [Dn, Up, Up, Up]
+    8  -> [Up, Dn, Up, Up]
+    9  -> [Dn, Dn, Up, Up]
+    5  -> [Up, Up, Dn, Up]
+    12 -> [Dn, Up, Dn, Up]
+    4  -> [Up, Dn, Dn, Up]
+    13 -> [Dn, Dn, Dn, Up]
+    6  -> [Up, Up, Up, Dn]
+    11 -> [Dn, Up, Up, Dn]
+    3  -> [Up, Dn, Up, Dn]
+    14 -> [Dn, Dn, Up, Dn]
+    7  -> [Up, Up, Dn, Dn]
+    10 -> [Dn, Up, Dn, Dn]
+    2  -> [Up, Dn, Dn, Dn]
+    15 -> [Dn, Dn, Dn, Dn]
+    _  -> []
 
 aTeam : Team
 aTeam =

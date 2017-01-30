@@ -6,12 +6,10 @@ import Models exposing (Appearance(..))
 
 transform : Appearance -> List (List Appearance)
 transform app =
-  let
-    transformed = List.map List.reverse (chunk <| List.reverse <| app :: helper [app])
-    _ = Debug.log "begin" <| List.length <| List.concat transformed
-    _ = debugger transformed
-  in
-    transformed
+  app :: helper [app]
+    |> List.reverse
+    |> chunk
+    |> List.map List.reverse
 
 helper : List Appearance -> List Appearance
 helper appList =
@@ -26,7 +24,6 @@ helper appList =
             hd :: helper (List.append tl [up, dn])
         Seeded team ->
           appList
-        Ignore -> []
 
 chunk : List Appearance -> List (List Appearance)
 chunk appList =
@@ -37,20 +34,8 @@ chunk appList =
     case grouped of
       [] -> []
       hd :: tl ->
-        case tl of
-          [x] -> List.append [hd] <| chunk x
-          _ -> [] -- can't happen?
-
-debugger : List (List Appearance) -> List String
-debugger list =
-  list
-    |> List.map (\l-> List.map debugApp l)
-    |> List.concat
-    |> List.map (Debug.log ">")
-
-debugApp : Appearance -> String
-debugApp app =
-  case app of
-    Winner game -> toString game.location
-    Seeded team -> (toString team.region) ++ ", " ++ (toString team.seed)
-    Ignore -> "?"
+        tl
+          |> List.head
+          |> Maybe.withDefault []
+          |> chunk
+          |> List.append [hd]

@@ -9,7 +9,7 @@ main{
   display:flex;
   flex-direction:column;
   justify-content:center;
-  width:200px;
+  width:130px;
   list-style:none;
   padding:0;
 }
@@ -32,24 +32,45 @@ body{
 }
 
 li.game{
-  padding-left:20px;
+  padding-left:0;
 }
 
-  li.game.winner{
-    font-weight:bold;
-  }
-  li.game span{
-    float:right;
-    margin-right:5px;
-  }
+li.game.winner{
+  font-weight:bold;
+}
+li.game span{
+  display: inline-block;
+  width: 1.25em;
+  text-align: right;
+  margin-right:5px;
+}
 
-  li.game-top{ border-bottom:1px solid #aaa; }
+li.game-top{
+  border-bottom:1px solid #aaa;
+  padding-left: 4px;
+}
 
-  li.game-spacer{
-    border-right:1px solid #aaa;
-    min-height:40px;
-  }
+li.game-spacer{
+  border-right:1px solid #aaa;
+  min-height:20px;
+  position: relative;
+}
 
-  li.game-bottom{
-    border-top:1px solid #aaa;
-  }
+li.game-bottom{
+  border-top:1px solid #aaa;
+  padding-bottom: 6px;
+}
+
+li.game-spacer .team {
+  position: absolute;
+  bottom: 0;
+  left: 4px;
+}
+
+.round-0 li.game-spacer .team {
+  left: 0;
+}
+
+.round-0 li.game-top {
+  padding-left: 0;
+}
