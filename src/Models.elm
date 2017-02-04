@@ -6,7 +6,8 @@ module Models exposing (
   model,
   randomizeBracket,
   seedForRegionalGameLocation,
-  UpDown(..))
+  UpDown(..),
+  Round, SubRound)
 
 import Dict exposing (Dict)
 import Rando exposing (Rando)
@@ -28,6 +29,9 @@ type alias Game =
 type Appearance
   = Winner Game
   | Seeded Team
+
+type alias Round = List Appearance
+type alias SubRound = Round
 
 type alias Team =
   { name : String
@@ -163,7 +167,7 @@ teamList =
   , ((1, 8), "Colorado")
   , ((1, 9), "Connecticut")
   , ((1, 5), "Maryland")
-  , ((1,12), "South Dakota St.")
+  , ((1,12), "S. Dakota St.")
   , ((1, 4), "California")
   , ((1,13), "Hawaii")
   , ((1, 6), "Arizona")
@@ -190,7 +194,7 @@ teamList =
   , ((4, 7), "Oregon State")
   , ((4,10), "VCU")
   , ((4, 2), "Oklahoma")
-  , ((4,15), "CSU Bakersfield")
+  , ((4,15), "CSU Bakers.")
 
   , ((2, 1), "North Carolina")
   , ((2,16), "FGCU")
@@ -203,7 +207,7 @@ teamList =
   , ((2, 6), "Notre Dame")
   , ((2,11), "Michigan")
   , ((2, 3), "West Virginia")
-  , ((2,14), "Steph. F. Austin")
+  , ((2,14), "S.F. Austin")
   , ((2, 7), "Wisconsin")
   , ((2,10), "Pittsburgh")
   , ((2, 2), "Xavier")

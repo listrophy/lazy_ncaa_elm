@@ -13,14 +13,21 @@ import List.Extra as List
 view : Model -> Html Msg
 view model =
   let
-      levels = TreeTransform.transform model.bracket
+      (left_, champ, right) = TreeTransform.transform model.bracket
+      left = List.reverse left_
   in
-    Html.main_ [A.id "tournament"]
+    Html.main_
+      [A.id "tournament"]
       ([ Html.node "link" [ A.href "/style.css", A.rel "stylesheet"] []
-      ] ++ (List.indexedMap renderLevel levels))
+      ] ++ (
+        (List.indexedMap (renderLevel False) left)) ++
+        [Html.ul [ A.class "round round-6"]
+          [ Html.li [] [ Html.text "-" ] ]] ++
+        (List.indexedMap (renderLevel True) right)
+      )
 
-renderLevel : Int -> List Appearance -> Html Msg
-renderLevel level matchups =
+renderLevel : Bool -> Int -> List Appearance -> Html Msg
+renderLevel isRight level matchups =
   let
     tupleize x =
       let
@@ -33,8 +40,13 @@ renderLevel level matchups =
       matchups
         |> List.groupsOf 2
         |> List.map tupleize
+    class =
+      if isRight then
+        "round round-right round-" ++ (toString <| level + 7)
+      else
+        "round round-" ++ toString level
   in
-    Html.ul [A.class <| "round round-" ++ toString level]
+    Html.ul [A.class class ]
       (spacer :: (List.concat <| List.map renderMatchup chunks))
 
 spacer : Html Msg

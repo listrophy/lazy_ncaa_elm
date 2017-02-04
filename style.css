@@ -26,9 +26,13 @@ main{
 */
 body{
   font-family:sans-serif;
-  font-size:small;
   padding:10px;
   line-height:1.4em;
+}
+
+#tournament {
+  font-size: 11px;
+  line-height: 11px;
 }
 
 li.game{
@@ -56,6 +60,11 @@ li.game-spacer{
   position: relative;
 }
 
+.round-right li.game-spacer {
+  border-right:none;
+  border-left:1px solid #aaa;
+}
+
 li.game-bottom{
   border-top:1px solid #aaa;
   padding-bottom: 6px;
@@ -65,6 +74,7 @@ li.game-spacer .team {
   position: absolute;
   bottom: 0;
   left: 4px;
+  overflow-x: hidden;
 }
 
 .round-0 li.game-spacer .team {
@@ -74,3 +84,34 @@ li.game-spacer .team {
 .round-0 li.game-top {
   padding-left: 0;
 }
+
+.seed {
+  font-size: 80%;
+}
+
+.round-right {
+  text-align: right;
+}
+
+.round-right .seed {
+  float: right;
+}
+
+.round-right li.game-top {
+  padding-left: 0;
+  padding-right: 4px;
+}
+
+.round-right li.game-spacer .team {
+  left: 0;
+  right: 4px;
+}
+
+
+/*
+
+.round-right .team, .round-right .game-top {
+  text-align: right;
+}
+
+*/
