@@ -34,13 +34,13 @@ renderFinals left champ winner =
       [ A.class "round round-5 finals"]
       [ Html.li
           [ A.class "champion" ]
-          [ Html.text "champ" ]
+          [ Html.text "-" ]
       , Html.li
           [ A.class "final-left" ]
-          [ Html.text "left" ]
+          [ Html.text "-" ]
       , Html.li
           [ A.class "final-right" ]
-          [ Html.text "right" ]
+          [ Html.text "-" ]
       , Html.li
           []
           []
