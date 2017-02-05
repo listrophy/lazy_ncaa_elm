@@ -4,11 +4,14 @@ import Html exposing (Html)
 import Html.Attributes as A
 import Html.Events as E
 import List.Extra as List
+
 import Messages exposing (Msg(..))
 import Models exposing (Appearance, Appearance(..), Game, Model, Team)
 import TreeTransform
 
-import List.Extra as List
+type Side
+  = Left
+  | Right
 
 view : Model -> Html Msg
 view model =
@@ -20,14 +23,14 @@ view model =
       [A.id "tournament"]
       ([ Html.node "link" [ A.href "/style.css", A.rel "stylesheet"] []
       ] ++ (
-        (List.indexedMap (renderLevel False) left)) ++
+        (List.indexedMap (renderLevel Left) left)) ++
         [Html.ul [ A.class "round round-6"]
           [ Html.li [] [ Html.text "-" ] ]] ++
-        (List.indexedMap (renderLevel True) right)
+        (List.indexedMap (renderLevel Right) right)
       )
 
-renderLevel : Bool -> Int -> List Appearance -> Html Msg
-renderLevel isRight level matchups =
+renderLevel : Side -> Int -> List Appearance -> Html Msg
+renderLevel side level matchups =
   let
     tupleize x =
       let
@@ -40,13 +43,22 @@ renderLevel isRight level matchups =
       matchups
         |> List.groupsOf 2
         |> List.map tupleize
+
+    class_ =
+      case side of
+        Right ->
+          "round round-right round-" ++ (toString <| level + 7)
+        Left ->
+          "round round-" ++ toString level
+
+    isFinals =
+      case side of
+        Left -> level == 5
+        Right -> level == 0
     class =
-      if isRight then
-        "round round-right round-" ++ (toString <| level + 7)
-      else
-        "round round-" ++ toString level
+      if isFinals then class_ ++ " finals" else class_
   in
-    Html.ul [A.class class ]
+    Html.ul [A.class class ] <|
       (spacer :: (List.concat <| List.map renderMatchup chunks))
 
 spacer : Html Msg

@@ -56,7 +56,7 @@ li.game-top{
 
 li.game-spacer{
   border-right:1px solid #aaa;
-  min-height:20px;
+  min-height: 14px;
   position: relative;
 }
 
