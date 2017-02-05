@@ -107,11 +107,29 @@ li.game-spacer .team {
   right: 4px;
 }
 
-
-/*
-
-.round-right .team, .round-right .game-top {
-  text-align: right;
+.finals {
+  width: 200px;
+  justify-content: space-around;
 }
 
-*/
+.finals li {
+  width: 130px;
+}
+
+.finals li.champion {
+  border-bottom: 1px solid #aaa;
+  text-align: center;
+}
+
+.finals li.final-left {
+  border-bottom: 1px solid #aaa;
+  align-self: flex-start;
+  padding-left: 4px;
+}
+
+.finals li.final-right {
+  border-bottom: 1px solid #aaa;
+  align-self: flex-end;
+  text-align: right;
+  padding-right: 4px;
+}

@@ -16,7 +16,7 @@ type Side
 view : Model -> Html Msg
 view model =
   let
-      (left_, champ, right) = TreeTransform.transform model.bracket
+      (left_, leftWinner, champ, rightWinner, right) = TreeTransform.transform model.bracket
       left = List.reverse left_
   in
     Html.main_
@@ -24,10 +24,28 @@ view model =
       ([ Html.node "link" [ A.href "/style.css", A.rel "stylesheet"] []
       ] ++ (
         (List.indexedMap (renderLevel Left) left)) ++
-        [Html.ul [ A.class "round round-6"]
-          [ Html.li [] [ Html.text "-" ] ]] ++
+        (renderFinals leftWinner champ rightWinner) ++
         (List.indexedMap (renderLevel Right) right)
       )
+
+renderFinals : Appearance -> Appearance -> Appearance -> List (Html Msg)
+renderFinals left champ winner =
+  [ Html.ul
+      [ A.class "round round-5 finals"]
+      [ Html.li
+          [ A.class "champion" ]
+          [ Html.text "champ" ]
+      , Html.li
+          [ A.class "final-left" ]
+          [ Html.text "left" ]
+      , Html.li
+          [ A.class "final-right" ]
+          [ Html.text "right" ]
+      , Html.li
+          []
+          []
+      ]
+  ]
 
 renderLevel : Side -> Int -> List Appearance -> Html Msg
 renderLevel side level matchups =
@@ -44,21 +62,20 @@ renderLevel side level matchups =
         |> List.groupsOf 2
         |> List.map tupleize
 
-    class_ =
+    isRight =
       case side of
-        Right ->
-          "round round-right round-" ++ (toString <| level + 7)
-        Left ->
-          "round round-" ++ toString level
+        Left -> False
+        Right -> True
 
-    isFinals =
-      case side of
-        Left -> level == 5
-        Right -> level == 0
-    class =
-      if isFinals then class_ ++ " finals" else class_
   in
-    Html.ul [A.class class ] <|
+    Html.ul
+      [ A.classList
+          [ ("round", True)
+          , ("round-right", isRight)
+          , ("round-" ++ (toString level), not isRight)
+          , ("round-" ++ (toString <| level + 6), isRight)
+          ]
+      ]
       (spacer :: (List.concat <| List.map renderMatchup chunks))
 
 spacer : Html Msg

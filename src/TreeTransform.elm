@@ -4,16 +4,26 @@ import List.Extra as List
 
 import Models exposing (Round, SubRound, Appearance(..))
 
-transform : Appearance -> (List Round, Appearance, List Round)
+transform : Appearance -> (List Round, Appearance, Appearance, Appearance, List Round)
 transform app =
   case app of
     Winner game ->
       let
           (left, right) = game.appearances
+          xformLeft = transformSubBracket left
+          xformRight = transformSubBracket right
+          noOp = ([], app, app, app, [])
       in
-         (transformSubBracket left, app, transformSubBracket right)
+        case xformLeft of
+          [winLeft] :: restLeft ->
+            case xformRight of
+              [winRight] :: restRight ->
+                (restLeft, winLeft, app, winRight, restRight)
+              _ -> noOp
+          _ -> noOp
+
     Seeded team ->
-      ([], app, [])
+      ([], app, app, app, [])
 
 transformSubBracket : Appearance -> List Round
 transformSubBracket app =
