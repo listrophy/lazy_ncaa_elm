@@ -5,8 +5,6 @@ module Models exposing (
   Appearance(..),
   model,
   randomizeBracket,
-  seedForRegionalGameLocation,
-  UpDown(..),
   Round, SubRound)
 
 import Dict exposing (Dict)
@@ -17,13 +15,11 @@ type alias Model =
    -- doesn't allow flags, so we have to go through a run-loop to generate our
    -- initial random value & seed.
   { rando : Maybe Rando
-  , bracket : Appearance
+  , tournament : List Round
   }
 
 type alias Game =
   { winner : Maybe Team
-  , appearances : (Appearance, Appearance)
-  , location : GameLocation
   }
 
 type Appearance
@@ -35,200 +31,107 @@ type alias SubRound = Round
 
 type alias Team =
   { name : String
-  , seed : Int
   , region : Int
+  , seed : Int
   }
-
-type UpDown = Up | Dn
-
-type alias GameLocation = List UpDown
-
 
 model : Model
 model =
-  let
-      appearances = (undecidedAppearance [Up], undecidedAppearance [Dn])
-      bracket =
-        { winner = Nothing
-        , appearances = appearances
-        , location = []
-        }
-  in
-    { rando = Nothing
-    , bracket = Winner bracket
-    }
-
-undecidedAppearance : GameLocation -> Appearance
-undecidedAppearance gameLoc =
-  case List.length gameLoc of
-    6 ->
-      let
-        regionAndSeed = determineRegionAndSeed gameLoc
-        team =
-          Dict.get regionAndSeed teamList
-            |> Maybe.withDefault (aTeam)
-      in
-        Seeded team
-
-    _ ->
-      let
-          up = undecidedAppearance (Up :: gameLoc)
-          dn = undecidedAppearance (Dn :: gameLoc)
-          game = Game Nothing (up, dn) gameLoc
-      in
-        Winner game
-
-determineRegionAndSeed : GameLocation -> (Int, Int)
-determineRegionAndSeed loc =
-  let
-    revLoc = List.reverse loc
-    championship = Maybe.withDefault Up <| List.head revLoc
-    finalFour = Maybe.withDefault Up <| List.head <| List.drop 1 revLoc
-    rest = List.drop 2 revLoc
-    seed = seedForRegionalGameLocation rest
-  in
-    case (championship, finalFour) of
-      (Up, Up) -> (1, seed)
-      (Up, Dn) -> (4, seed)
-      (Dn, Up) -> (2, seed)
-      (Dn, Dn) -> (3, seed)
+  { rando = Nothing
+  , tournament = teamList
+  }
 
 -- TODO: implement this
 randomizeBracket : Model -> Model
 randomizeBracket m =
   model
 
-seedForRegionalGameLocation : GameLocation -> Int
-seedForRegionalGameLocation upDownList =
-  let
-      powerer x m =
-        case x of
-          Dn ->
-            (2 ^ (List.length m)) :: m
-          Up ->
-            0 :: m
-  in
-    upDownList
-      |> List.reverse
-      |> List.foldl powerer []
-      |> List.foldl (+) 1
-      |> seedLookup
-
-seedLookup : Int -> Int
-seedLookup int =
-    case int of
-      1 -> 1
-      2 -> 16
-      3 -> 8
-      4 -> 9
-      5 -> 5
-      6 -> 12
-      7 -> 4
-      8 -> 13
-      9 -> 6
-      10 -> 11
-      11 -> 3
-      12 -> 14
-      13 -> 7
-      14 -> 10
-      15 -> 2
-      16 -> 15
-      _ -> 0
-
-positionLookup : Int -> GameLocation
-positionLookup seed =
-  case seed of
-    1  -> [Up, Up, Up, Up]
-    16 -> [Dn, Up, Up, Up]
-    8  -> [Up, Dn, Up, Up]
-    9  -> [Dn, Dn, Up, Up]
-    5  -> [Up, Up, Dn, Up]
-    12 -> [Dn, Up, Dn, Up]
-    4  -> [Up, Dn, Dn, Up]
-    13 -> [Dn, Dn, Dn, Up]
-    6  -> [Up, Up, Up, Dn]
-    11 -> [Dn, Up, Up, Dn]
-    3  -> [Up, Dn, Up, Dn]
-    14 -> [Dn, Dn, Up, Dn]
-    7  -> [Up, Up, Dn, Dn]
-    10 -> [Dn, Up, Dn, Dn]
-    2  -> [Up, Dn, Dn, Dn]
-    15 -> [Dn, Dn, Dn, Dn]
-    _  -> []
-
 aTeam : Team
 aTeam =
   Team "-" 1 1
 
-teamList : Dict (Int, Int) Team
+teamList : List Round
 teamList =
-  [ ((1, 1), "Kansas")
-  , ((1,16), "Austin Peay")
-  , ((1, 8), "Colorado")
-  , ((1, 9), "Connecticut")
-  , ((1, 5), "Maryland")
-  , ((1,12), "S. Dakota St.")
-  , ((1, 4), "California")
-  , ((1,13), "Hawaii")
-  , ((1, 6), "Arizona")
-  , ((1,11), "Witchita State")
-  , ((1, 3), "Miami (Fla)")
-  , ((1,14), "Buffalo")
-  , ((1, 7), "Iowa")
-  , ((1,10), "Temple")
-  , ((1, 2), "Villanova")
-  , ((1,15), "UNC Asheville")
+  let
+      firstRound =
+        [ Team "Kansas"         1  1
+        , Team "Austin Peay"    1 16
+        , Team "Colorado"       1  8
+        , Team "Connecticut"    1  9
+        , Team "Maryland"       1  5
+        , Team "S. Dakota St."  1 12
+        , Team "California"     1  4
+        , Team "Hawaii"         1 13
+        , Team "Arizona"        1  6
+        , Team "Witchita State" 1 11
+        , Team "Miami (Fla)"    1  3
+        , Team "Buffalo"        1 14
+        , Team "Iowa"           1  7
+        , Team "Temple"         1 10
+        , Team "Villanova"      1  2
+        , Team "UNC Asheville"  1 15
 
-  , ((4, 1), "Oregon")
-  , ((4,16), "Holy Cross")
-  , ((4, 8), "Saint Joseph's")
-  , ((4, 9), "Cincinnati")
-  , ((4, 5), "Baylor")
-  , ((4,12), "Yale")
-  , ((4, 4), "Duke")
-  , ((4,13), "UNCW")
-  , ((4, 6), "Texas")
-  , ((4,11), "UNI")
-  , ((4, 3), "Texas A&M")
-  , ((4,14), "Green Bay")
-  , ((4, 7), "Oregon State")
-  , ((4,10), "VCU")
-  , ((4, 2), "Oklahoma")
-  , ((4,15), "CSU Bakers.")
+        , Team "Oregon"         4  1
+        , Team "Holy Cross"     4 16
+        , Team "Saint Joseph's" 4  8
+        , Team "Cincinnati"     4  9
+        , Team "Baylor"         4  5
+        , Team "Yale"           4 12
+        , Team "Duke"           4  4
+        , Team "UNCW"           4 13
+        , Team "Texas"          4  6
+        , Team "UNI"            4 11
+        , Team "Texas A&M"      4  3
+        , Team "Green Bay"      4 14
+        , Team "Oregon State"   4  7
+        , Team "VCU"            4 10
+        , Team "Oklahoma"       4  2
+        , Team "CSU Bakers."    4 15
 
-  , ((2, 1), "North Carolina")
-  , ((2,16), "FGCU")
-  , ((2, 8), "USC")
-  , ((2, 9), "Providence")
-  , ((2, 5), "Indiana")
-  , ((2,12), "Chattanooga")
-  , ((2, 4), "Kentucky")
-  , ((2,13), "Stony Brook")
-  , ((2, 6), "Notre Dame")
-  , ((2,11), "Michigan")
-  , ((2, 3), "West Virginia")
-  , ((2,14), "S.F. Austin")
-  , ((2, 7), "Wisconsin")
-  , ((2,10), "Pittsburgh")
-  , ((2, 2), "Xavier")
-  , ((2,15), "Weber State")
+        , Team "North Carolina" 2  1
+        , Team "FGCU"           2 16
+        , Team "USC"            2  8
+        , Team "Providence"     2  9
+        , Team "Indiana"        2  5
+        , Team "Chattanooga"    2 12
+        , Team "Kentucky"       2  4
+        , Team "Stony Brook"    2 13
+        , Team "Notre Dame"     2  6
+        , Team "Michigan"       2 11
+        , Team "West Virginia"  2  3
+        , Team "S.F. Austin"    2 14
+        , Team "Wisconsin"      2  7
+        , Team "Pittsburgh"     2 10
+        , Team "Xavier"         2  2
+        , Team "Weber State"    2 15
 
-  , ((3, 1), "Virginia")
-  , ((3,16), "Hampton")
-  , ((3, 8), "Texas Tech")
-  , ((3, 9), "Butler")
-  , ((3, 5), "Purdue")
-  , ((3,12), "Little Rock")
-  , ((3, 4), "Iowa State")
-  , ((3,13), "Iona")
-  , ((3, 6), "Seton Hall")
-  , ((3,11), "Gonzaga")
-  , ((3, 3), "Utah")
-  , ((3,14), "Fresno State")
-  , ((3, 7), "Dayton")
-  , ((3,10), "Syracuse")
-  , ((3, 2), "Michigan State")
-  , ((3,15), "Middle Tenn.")
-  ]
-  |> List.map (\((r,s),t) -> ((r,s), Team t s r))
-  |> Dict.fromList
+        , Team "Virginia"       3  1
+        , Team "Hampton"        3 16
+        , Team "Texas Tech"     3  8
+        , Team "Butler"         3  9
+        , Team "Purdue"         3  5
+        , Team "Little Rock"    3 12
+        , Team "Iowa State"     3  4
+        , Team "Iona"           3 13
+        , Team "Seton Hall"     3  6
+        , Team "Gonzaga"        3 11
+        , Team "Utah"           3  3
+        , Team "Fresno State"   3 14
+        , Team "Dayton"         3  7
+        , Team "Syracuse"       3 10
+        , Team "Michigan State" 3  2
+        , Team "Middle Tenn."   3 15
+        ]
+        |> List.map Seeded
+      builder l =
+        case l of
+          [] -> []
+          x :: tl ->
+            case List.length x of
+              1 ->
+                l
+              n ->
+                builder <| (List.repeat (n // 2) <| Winner <| Game Nothing) :: l
+  in
+     builder [firstRound]
+      |> List.reverse
