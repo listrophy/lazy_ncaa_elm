@@ -74,7 +74,8 @@ li.game-spacer .team {
   position: absolute;
   bottom: 0;
   left: 4px;
-  overflow-x: hidden;
+  height: 12px;
+  overflow: hidden;
 }
 
 .round-0 li.game-spacer .team {
@@ -95,6 +96,8 @@ li.game-spacer .team {
 
 .round-right .seed {
   float: right;
+  margin-right: 0;
+  padding-top: 1px;
 }
 
 .round-right li.game-top {
@@ -102,9 +105,17 @@ li.game-spacer .team {
   padding-right: 4px;
 }
 
+.round-0.round-right li.game-top {
+  padding-right: 0;
+}
+
 .round-right li.game-spacer .team {
   left: 0;
   right: 4px;
+}
+
+.round-0.round-right li.game-spacer .team {
+  right: 0;
 }
 
 .finals {
@@ -114,11 +125,17 @@ li.game-spacer .team {
 
 .finals li {
   width: 130px;
+  flex-grow: 1;
+}
+
+.round.finals .spacer:first-child, .round.finals .spacer:last-child {
+  flex-grow: 2;
 }
 
 .finals li.champion {
   border-bottom: 1px solid #aaa;
   text-align: center;
+  align-self: center;
 }
 
 .finals li.final-left {
@@ -132,4 +149,27 @@ li.game-spacer .team {
   align-self: flex-end;
   text-align: right;
   padding-right: 4px;
+}
+
+.final, .champion {
+  position: relative;
+}
+
+.final .team, .champion .team {
+  position: absolute;
+  bottom: 0;
+}
+
+.final.final-left .team {
+  left: 4px;
+}
+
+.final.final-right .team {
+  right: 4px;
+}
+
+.champion .team {
+  left: 4px;
+  right: 4px;
+  text-align: center;
 }

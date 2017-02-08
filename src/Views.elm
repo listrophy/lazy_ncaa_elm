@@ -1,4 +1,4 @@
-module Views exposing (view)
+module Views exposing (..)
 
 import Html exposing (Html)
 import Html.Attributes as A
@@ -15,23 +15,54 @@ type Side
 
 view : Model -> Html Msg
 view model =
-  let
-      _ = Debug.log "tournament" model.tournament
-  in
-    Html.main_
-      [A.id "tournament"] <|
-      [ Html.node "link" [ A.href "/style.css", A.rel "stylesheet"] []
-      ] ++ tourney model.tournament
+  Html.main_
+    [A.id "tournament"] <|
+    [ Html.node "link" [ A.href "/style.css", A.rel "stylesheet"] []
+    ] ++ tourney model.tournament
 
 tourney : List Round -> List (Html Msg)
 tourney =
   layout << htmlizeBracket
-  --List.indexedMap renderRound
 
 layout : List (List (Html Msg)) -> List (Html Msg)
 layout bracket =
-  bracket
-    |> List.indexedMap (\num round -> Html.ul [ A.class ("round round-" ++ (toString num)) ] (spacer :: round))
+  let
+      (left, finals, right) = leftRightBreak <| List.reverse bracket
+  in
+     List.concat
+        [ List.indexedMap (\num round -> Html.ul [ A.class ("round round-" ++ (toString num)) ] (spacer :: round)) left
+        , finalsHtml finals
+        , List.indexedMap (\num round -> Html.ul [ A.class ("round round-right round-" ++ (toString num)) ] (spacer :: round)) right
+        ]
+
+leftRightBreak : List (List a) -> (List (List a), List a, List (List a))
+leftRightBreak bracket =
+  case bracket of
+    champion :: finalists :: rest ->
+      let
+          (left, right) = List.unzip <| List.map halve rest
+      in
+         (List.reverse left, List.concat [champion, finalists], right)
+    _ ->
+      ([], [], [])
+
+finalsHtml : List (Html Msg) -> List (Html Msg)
+finalsHtml finals =
+  case finals of
+    champion :: left :: right :: [] ->
+      [ Html.ul [ A.class "round finals" ]
+          [ champion
+          , left
+          , right
+          , spacer
+          ]
+      ]
+
+    _ -> []
+
+halve : List a -> (List a, List a)
+halve list =
+  List.splitAt ((List.length list) // 2) list
 
 htmlizeBracket : List Round -> List (List (Html Msg))
 htmlizeBracket =
@@ -39,45 +70,97 @@ htmlizeBracket =
 
 htmlizeRound : Int -> Round -> List (Html Msg)
 htmlizeRound roundNum =
-  List.concat << List.indexedMap htmlizeAppearance
+  if roundNum == 6 then
+    htmlizeChampion
+  else if roundNum == 5 then
+    htmlizeFinals
+  else
+    htmlizeGenericRound roundNum
 
-htmlizeAppearance : Int -> Appearance -> List (Html Msg)
-htmlizeAppearance lineNum =
-  case lineNum % 2 of
-    0 -> htmlizeTopLine
-    _ -> htmlizeBottomLine
-
-htmlizeTopLine : Appearance -> List (Html Msg)
-htmlizeTopLine app =
+htmlizeChampion : Round -> List (Html Msg)
+htmlizeChampion =
   let
-      teamName =
-        case extractTeam app of
-          Just team -> team.name
-          Nothing -> "-"
-  in
-    [ Html.li
-        [ A.class "game game-top" ]
-        [ Html.text teamName
+      html x =
+        [ Html.li
+            [ A.class "champion" ]
+            [ Html.div
+                [ A.class "team" ]
+                [ Html.text "-" ]
+            ]
         ]
-    ]
+  in
+     List.concat << List.map html
 
-htmlizeBottomLine : Appearance -> List (Html Msg)
-htmlizeBottomLine app =
+htmlizeFinals : Round -> List (Html Msg)
+htmlizeFinals =
+  let
+      html i app =
+        let
+            team = extractTeam app
+        in
+          [ Html.li
+              [ A.class <| "final " ++ (if i == 0 then "final-left" else "final-right") ]
+              [ Html.div
+                  [ A.class "team" ]
+                  [ Html.text <| Maybe.withDefault "-" <| Maybe.map .name team ]
+              ]
+          ]
+  in
+    List.concat << List.indexedMap html
+
+htmlizeGenericRound : Int -> Round -> List (Html Msg)
+htmlizeGenericRound roundNum =
+  List.concat << List.indexedMap (htmlizeAppearance roundNum)
+
+htmlizeAppearance : Int -> Int -> Appearance -> List (Html Msg)
+htmlizeAppearance roundNum lineNum =
+  case lineNum % 2 of
+    0 -> htmlizeTopLine roundNum lineNum
+    _ -> htmlizeBottomLine roundNum lineNum
+
+htmlizeTopLine : Int -> Int -> Appearance -> List (Html Msg)
+htmlizeTopLine roundNum lineNum app =
   let
       (teamName, seed) =
         case extractTeam app of
           Just team -> (team.name, toString team.seed)
           Nothing -> ("-", "")
+      content =
+        if roundNum == 0 then
+          [ Html.span [ A.class "seed" ] [ Html.text seed ]
+          , Html.text teamName
+          ]
+        else
+          [ Html.text teamName
+          ]
+
   in
     [ Html.li
-        [ A.class "game game-spacer" ]
+        [ A.class "game game-top", E.onClick <| PickWinner roundNum lineNum ]
+        content
+    ]
+
+htmlizeBottomLine : Int -> Int -> Appearance -> List (Html Msg)
+htmlizeBottomLine roundNum lineNum app =
+  let
+      (teamName, seed) =
+        case extractTeam app of
+          Just team -> (team.name, toString team.seed)
+          Nothing -> ("-", "")
+      content =
+        if roundNum == 0 then
+          [ Html.span [ A.class "seed" ] [ Html.text seed ]
+          , Html.text teamName
+          ]
+        else
+          [ Html.text teamName
+          ]
+  in
+    [ Html.li
+        [ A.class "game game-spacer", E.onClick <| PickWinner roundNum lineNum ]
         [ Html.div
             [ A.class "team" ]
-            [ Html.div
-                [ A.class "seed" ]
-                [ Html.text seed ]
-            , Html.text teamName
-            ]
+            content
         ]
     , Html.li [ A.class "game game-bottom" ] []
     , spacer
@@ -92,114 +175,6 @@ extractTeam app =
       game.winner
 
 
--- renderRound : Int -> Round -> Html Msg
--- renderRound idx round =
---     Html.ul
---       [A.class <| "round round-" ++ (toString idx)] <|
---       (spacer :: (List.concat <| List.indexedMap renderTeam round))
--- 
--- renderTeam : Int -> Appearance -> List (Html Msg)
--- renderTeam idx app =
---   case idx % 2 of
---     1 ->
---       [ Html.li [ A.class "game game-bottom" ] []
---       , spacer
---       ]
---     _ ->
---       case app of
---         Seeded team ->
---           [ Html.li [ A.class "game game-top" ] []
---           , Html.li [ A.class "game game-spacer" ] []
---           ]
---         Winner game ->
---           [ Html.li [ A.class "game game-top" ] []
---           , Html.li [ A.class "game game-spacer" ] []
---           ]
-
 spacer : Html Msg
 spacer =
   Html.li [A.class "spacer"] [ Html.text " " ]
-
--- renderFinals : Appearance -> Appearance -> Appearance -> List (Html Msg)
--- renderFinals left champ winner =
---   [ Html.ul
---       [ A.class "round round-5 finals"]
---       [ Html.li
---           [ A.class "champion" ]
---           [ Html.text "-" ]
---       , Html.li
---           [ A.class "final-left" ]
---           [ Html.text "-" ]
---       , Html.li
---           [ A.class "final-right" ]
---           [ Html.text "-" ]
---       , Html.li
---           []
---           []
---       ]
---   ]
--- 
--- renderLevel : Side -> Int -> List Appearance -> Html Msg
--- renderLevel side level matchups =
---   let
---     tupleize x =
---       let
---         a = List.getAt 0 x
---         b = List.getAt 1 x
---       in
---         (a, b)
--- 
---     chunks =
---       matchups
---         |> List.groupsOf 2
---         |> List.map tupleize
--- 
---     isRight =
---       case side of
---         Left -> False
---         Right -> True
--- 
---   in
---     Html.ul
---       [ A.classList
---           [ ("round", True)
---           , ("round-right", isRight)
---           , ("round-" ++ (toString level), not isRight)
---           , ("round-" ++ (toString <| level + 6), isRight)
---           ]
---       ]
---       (spacer :: (List.concat <| List.map renderMatchup chunks))
--- 
--- spacer : Html Msg
--- spacer =
---   Html.li [A.class "spacer"] [ Html.text " " ]
--- 
--- renderMatchup : (Maybe Appearance, Maybe Appearance) -> List (Html Msg)
--- renderMatchup apps =
---   case apps of
---     (Just up, Just dn) ->
---       [ Html.li
---           [ A.class "game game-top", E.onClick <| PickWinner up ]
---           (teamNameForAppearance up)
---       , Html.li
---           [ A.class "game game-spacer", E.onClick <| PickWinner dn ]
---           [ Html.div [A.class "team"] ( teamNameForAppearance dn ) ]
---       , Html.li
---           [ A.class "game game-bottom" ]
---           [ ]
---       , spacer
---       ]
---     _ -> []
--- 
--- teamNameForAppearance : Appearance -> List (Html Msg)
--- teamNameForAppearance app =
---   case app of
---     Winner game ->
---       case game.winner of
---         Just team -> [Html.text team.name]
---         Nothing -> [Html.text "-"]
--- 
---     Seeded x ->
---       [ Html.span [A.class "seed"] [ Html.text <| toString x.seed ]
---       , Html.text <| x.name
---       ]

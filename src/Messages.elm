@@ -5,4 +5,4 @@ import Models exposing (Appearance)
 type Msg
   = NoOp
   | InitializeSeed Int
-  | PickWinner Appearance
+  | PickWinner Int Int
