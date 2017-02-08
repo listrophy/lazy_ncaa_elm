@@ -8,11 +8,6 @@ import List.Extra as List
 
 import Messages exposing (Msg(..))
 import Models exposing (Appearance, Appearance(..), Game, Model, Team, Round)
--- import TreeTransform
-
-type Side
-  = Left
-  | Right
 
 view : Model -> Html Msg
 view model =
@@ -23,18 +18,19 @@ view model =
 
 tourney : Array Round -> List (Html Msg)
 tourney =
-  layout << htmlizeBracket
+  layout << groupIntoRounds << htmlizeAppearances
 
-layout : List (List (Html Msg)) -> List (Html Msg)
-layout bracket =
-  let
-      (left, finals, right) = leftRightBreak <| List.reverse bracket
-  in
-     List.concat
-        [ List.indexedMap (\num round -> Html.ul [ A.class ("round round-" ++ (toString num)) ] (spacer :: round)) left
-        , finalsHtml finals
-        , List.indexedMap (\num round -> Html.ul [ A.class ("round round-right round-" ++ (toString num)) ] (spacer :: round)) right
-        ]
+groupIntoRounds : List (List (Html Msg)) -> (List (List (Html Msg)), List (Html Msg), List (List (Html Msg)))
+groupIntoRounds =
+  leftRightBreak << List.reverse
+
+layout : (List (List (Html Msg)), List (Html Msg), List (List (Html Msg))) -> List (Html Msg)
+layout (left, finals, right) =
+  List.concat
+     [ List.indexedMap (\num round -> Html.ul [ A.class ("round round-" ++ (toString num)) ] (spacer :: round)) left
+     , finalsHtml finals
+     , List.reverse <| List.indexedMap (\num round -> Html.ul [ A.class ("round round-right round-" ++ (toString num)) ] (spacer :: round)) right
+     ]
 
 leftRightBreak : List (List a) -> (List (List a), List a, List (List a))
 leftRightBreak bracket =
@@ -43,7 +39,7 @@ leftRightBreak bracket =
       let
           (left, right) = List.unzip <| List.map halve rest
       in
-         (List.reverse left, List.concat [champion, finalists], right)
+         (List.reverse left, List.concat [champion, finalists], List.reverse right)
     _ ->
       ([], [], [])
 
@@ -55,7 +51,7 @@ finalsHtml finals =
           [ champion
           , left
           , right
-          , spacer
+          , randomizeButton
           ]
       ]
 
@@ -65,8 +61,8 @@ halve : List a -> (List a, List a)
 halve list =
   List.splitAt ((List.length list) // 2) list
 
-htmlizeBracket : Array Round -> List (List (Html Msg))
-htmlizeBracket =
+htmlizeAppearances : Array Round -> List (List (Html Msg))
+htmlizeAppearances =
   Array.indexedMap htmlizeRound
     >> Array.toList
 
@@ -80,18 +76,20 @@ htmlizeRound roundNum =
     htmlizeGenericRound roundNum
 
 htmlizeChampion : Round -> List (Html Msg)
-htmlizeChampion =
+htmlizeChampion round =
   let
+      team = Maybe.andThen extractTeam <| Array.get 0 round
       html x =
         [ Html.li
             [ A.class "champion" ]
             [ Html.div
                 [ A.class "team" ]
-                [ Html.text "-" ]
+                [ Html.text <| Maybe.withDefault "-" <| Maybe.map .name team ]
             ]
         ]
   in
      List.concat << Array.toList << Array.map html
+      <| round
 
 htmlizeFinals : Round -> List (Html Msg)
 htmlizeFinals =
@@ -101,7 +99,7 @@ htmlizeFinals =
             team = extractTeam app
         in
           [ Html.li
-              [ A.class <| "final " ++ (if i == 0 then "final-left" else "final-right") ]
+              [ A.class <| "final " ++ (if i == 0 then "final-left" else "final-right"), E.onClick <| PickWinner 5 i ]
               [ Html.div
                   [ A.class "team" ]
                   [ Html.text <| Maybe.withDefault "-" <| Maybe.map .name team ]
@@ -180,3 +178,9 @@ extractTeam app =
 spacer : Html Msg
 spacer =
   Html.li [A.class "spacer"] [ Html.text " " ]
+
+randomizeButton : Html Msg
+randomizeButton =
+  Html.li
+    [ A.class "randomizer" ]
+    [ Html.button [ E.onClick Randomize ] [ Html.text "Randomize" ] ]

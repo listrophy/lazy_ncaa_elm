@@ -22,7 +22,11 @@ update msg ({rando, tournament} as model) =
           (Models.randomizeBracket newModel, Cmd.none)
 
     PickWinner roundNum lineNum ->
-      ({model | tournament = pickWinner tournament roundNum lineNum}, Cmd.none)
+      let _ = Debug.log "round, line" (roundNum, lineNum)
+      in ({model | tournament = pickWinner tournament roundNum lineNum}, Cmd.none)
+
+    Randomize ->
+      model ! []
 
 pickWinner : Array Round -> Int -> Int -> Array Round
 pickWinner bracket roundNum lineNum =
@@ -30,10 +34,6 @@ pickWinner bracket roundNum lineNum =
       maybePickedTeam =
         Array.get roundNum bracket
           |> Maybe.andThen (Array.get lineNum)
-      maybeNextRound =
-        Array.get (roundNum + 1) bracket
-      maybeNextSpot =
-          Maybe.map (Array.get (lineNum // 2)) maybeNextRound
   in
      case maybePickedTeam of
        Nothing ->
@@ -62,14 +62,10 @@ modifyWinner roundNum lineNum winningTeam =
     Optional.modify (bracketLineOptional roundNum lineNum)
       setWinner
 
-bracketRoundOptional : Int -> Optional (Array Round) Round
-bracketRoundOptional =
-  Monocle.array
-
-roundLineOptional : Int -> Optional Round Appearance
-roundLineOptional =
-  Monocle.array
-
 bracketLineOptional : Int -> Int -> Optional (Array Round) Appearance
 bracketLineOptional roundNum lineNum =
-  Optional.compose (bracketRoundOptional roundNum) (roundLineOptional lineNum)
+  let
+      bracketToRound = Monocle.array roundNum
+      roundToLine = Monocle.array lineNum
+  in
+     Optional.compose bracketToRound roundToLine

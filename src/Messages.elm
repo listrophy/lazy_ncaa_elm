@@ -6,3 +6,4 @@ type Msg
   = NoOp
   | InitializeSeed Int
   | PickWinner Int Int
+  | Randomize

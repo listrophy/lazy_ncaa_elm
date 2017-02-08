@@ -173,3 +173,12 @@ li.game-spacer .team {
   right: 4px;
   text-align: center;
 }
+
+.finals li.randomizer {
+  align-self: center;
+  flex-grow: 2;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+}
