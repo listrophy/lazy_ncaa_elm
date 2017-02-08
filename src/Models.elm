@@ -7,6 +7,7 @@ module Models exposing (
   randomizeBracket,
   Round, SubRound)
 
+import Array exposing (Array)
 import Dict exposing (Dict)
 import Rando exposing (Rando)
 
@@ -15,7 +16,7 @@ type alias Model =
    -- doesn't allow flags, so we have to go through a run-loop to generate our
    -- initial random value & seed.
   { rando : Maybe Rando
-  , tournament : List Round
+  , tournament : Array Round
   }
 
 type alias Game =
@@ -26,7 +27,7 @@ type Appearance
   = Winner Game
   | Seeded Team
 
-type alias Round = List Appearance
+type alias Round = Array Appearance
 type alias SubRound = Round
 
 type alias Team =
@@ -38,7 +39,7 @@ type alias Team =
 model : Model
 model =
   { rando = Nothing
-  , tournament = teamList
+  , tournament = teamArray
   }
 
 -- TODO: implement this
@@ -50,8 +51,8 @@ aTeam : Team
 aTeam =
   Team "-" 1 1
 
-teamList : List Round
-teamList =
+teamArray : Array Round
+teamArray =
   let
       firstRound =
         [ Team "Kansas"         1  1
@@ -135,3 +136,5 @@ teamList =
   in
      builder [firstRound]
       |> List.reverse
+      |> List.map Array.fromList
+      |> Array.fromList

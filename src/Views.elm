@@ -1,5 +1,6 @@
 module Views exposing (..)
 
+import Array exposing (Array)
 import Html exposing (Html)
 import Html.Attributes as A
 import Html.Events as E
@@ -20,7 +21,7 @@ view model =
     [ Html.node "link" [ A.href "/style.css", A.rel "stylesheet"] []
     ] ++ tourney model.tournament
 
-tourney : List Round -> List (Html Msg)
+tourney : Array Round -> List (Html Msg)
 tourney =
   layout << htmlizeBracket
 
@@ -64,9 +65,10 @@ halve : List a -> (List a, List a)
 halve list =
   List.splitAt ((List.length list) // 2) list
 
-htmlizeBracket : List Round -> List (List (Html Msg))
+htmlizeBracket : Array Round -> List (List (Html Msg))
 htmlizeBracket =
-  List.indexedMap htmlizeRound
+  Array.indexedMap htmlizeRound
+    >> Array.toList
 
 htmlizeRound : Int -> Round -> List (Html Msg)
 htmlizeRound roundNum =
@@ -89,7 +91,7 @@ htmlizeChampion =
             ]
         ]
   in
-     List.concat << List.map html
+     List.concat << Array.toList << Array.map html
 
 htmlizeFinals : Round -> List (Html Msg)
 htmlizeFinals =
@@ -106,11 +108,11 @@ htmlizeFinals =
               ]
           ]
   in
-    List.concat << List.indexedMap html
+    List.concat << Array.toList << Array.indexedMap html
 
 htmlizeGenericRound : Int -> Round -> List (Html Msg)
 htmlizeGenericRound roundNum =
-  List.concat << List.indexedMap (htmlizeAppearance roundNum)
+  List.concat << Array.toList << Array.indexedMap (htmlizeAppearance roundNum)
 
 htmlizeAppearance : Int -> Int -> Appearance -> List (Html Msg)
 htmlizeAppearance roundNum lineNum =

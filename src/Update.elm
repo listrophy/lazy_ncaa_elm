@@ -1,7 +1,8 @@
 module Update exposing (update)
 
-import List.Extra as List
+import Array exposing (Array)
 import Monocle.Optional as Optional exposing (Optional)
+import Monocle.Common as Monocle
 
 import Messages exposing (Msg(..))
 import Models exposing (Model, Round, Appearance(..), Game, Team)
@@ -23,16 +24,16 @@ update msg ({rando, tournament} as model) =
     PickWinner roundNum lineNum ->
       ({model | tournament = pickWinner tournament roundNum lineNum}, Cmd.none)
 
-pickWinner : List Round -> Int -> Int -> List Round
+pickWinner : Array Round -> Int -> Int -> Array Round
 pickWinner bracket roundNum lineNum =
   let
       maybePickedTeam =
-        List.getAt roundNum bracket
-          |> Maybe.andThen (List.getAt lineNum)
+        Array.get roundNum bracket
+          |> Maybe.andThen (Array.get lineNum)
       maybeNextRound =
-        List.getAt (roundNum + 1) bracket
+        Array.get (roundNum + 1) bracket
       maybeNextSpot =
-          Maybe.map (List.getAt (lineNum // 2)) maybeNextRound
+          Maybe.map (Array.get (lineNum // 2)) maybeNextRound
   in
      case maybePickedTeam of
        Nothing ->
@@ -49,7 +50,7 @@ pickWinner bracket roundNum lineNum =
              bracket
               |> modifyWinner (roundNum + 1) (lineNum // 2) team
 
-modifyWinner : Int -> Int -> Team -> List Round -> List Round
+modifyWinner : Int -> Int -> Team -> Array Round -> Array Round
 modifyWinner roundNum lineNum winningTeam =
   let
       setWinner app =
@@ -61,39 +62,14 @@ modifyWinner roundNum lineNum winningTeam =
     Optional.modify (bracketLineOptional roundNum lineNum)
       setWinner
 
-bracketRoundOptional : Int -> Optional (List Round) Round
+bracketRoundOptional : Int -> Optional (Array Round) Round
 bracketRoundOptional =
-  listOpt
+  Monocle.array
 
 roundLineOptional : Int -> Optional Round Appearance
 roundLineOptional =
-  listOpt
+  Monocle.array
 
-bracketLineOptional : Int -> Int -> Optional (List Round) Appearance
+bracketLineOptional : Int -> Int -> Optional (Array Round) Appearance
 bracketLineOptional roundNum lineNum =
   Optional.compose (bracketRoundOptional roundNum) (roundLineOptional lineNum)
-
-listOpt : Int -> Optional (List a) a
-listOpt index =
-  let
-      getOption = List.getAt index
-      set : a -> List a -> List a
-      set x y =
-        Maybe.withDefault y <| List.setAt index x y
-  in
-     Optional getOption set
-
-     -- case maybePickedTeam of
-     --   Nothing -> bracket
-     --   Just pickedTeam ->
-     --     case maybeNextSpot of
-     --       Nothing -> bracket
-     --       Just nextSpot ->
-     --         let
-     --             newNextRound =
-     --               maybeNextRound
-     --                 |> Maybe.andThen (List.setAt (lineNum // 2) (Just pickedTeam))
-     --         in
-     --            bracket
-     --              |> List.setAt (roundNum + 1) newNextRound
-     --              |> Maybe.withDefault bracket
