@@ -41,23 +41,23 @@ pickWinner bracket roundNum lineNum =
 
        Just (Seeded team) ->
          bracket
-          |> modifyWinner (roundNum + 1) (lineNum // 2) team
+          |> modifyWinner (roundNum + 1) (lineNum // 2) (Just team)
 
        Just (Winner game) ->
          case game.winner of
            Nothing -> bracket
            Just team ->
              bracket
-              |> modifyWinner (roundNum + 1) (lineNum // 2) team
+              |> modifyWinner (roundNum + 1) (lineNum // 2) (Just team)
 
-modifyWinner : Int -> Int -> Team -> Array Round -> Array Round
-modifyWinner roundNum lineNum winningTeam =
+modifyWinner : Int -> Int -> Maybe Team -> Array Round -> Array Round
+modifyWinner roundNum lineNum maybeWinningTeam =
   let
       setWinner app =
         case app of
           Seeded _ -> app
           Winner game ->
-            Winner {game | winner = Just winningTeam}
+            Winner {game | winner = maybeWinningTeam}
   in
     Optional.modify (bracketLineOptional roundNum lineNum)
       setWinner
