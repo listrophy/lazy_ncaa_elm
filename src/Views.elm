@@ -12,9 +12,13 @@ import Models exposing (Appearance, Appearance(..), Game, Model, Team, Round)
 view : Model -> Html Msg
 view model =
   Html.main_
-    [A.id "tournament"] <|
-    [ Html.node "link" [ A.href "/style.css", A.rel "stylesheet"] []
-    ] ++ tourney model.tournament
+    [ A.id "tournament" ] <|
+      [ Html.node "link"
+        [ A.href "/style.css"
+        , A.rel "stylesheet"
+        ]
+        []
+      ] ++ tourney model.tournament
 
 tourney : Array Round -> List (Html Msg)
 tourney =
