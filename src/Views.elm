@@ -2,23 +2,22 @@ module Views exposing (..)
 
 import Array exposing (Array)
 import Html exposing (Html)
-import Html.Attributes as A
+import Html.CssHelpers
 import Html.Events as E
 import List.Extra as List
-
 import Messages exposing (Msg(..))
-import Models exposing (Appearance, Appearance(..), Game, Model, Team, Round)
+import Models exposing (Appearance, Appearance(..), Game, Model, Round, Team)
+import Style as S
+
+{ id, class, classList } =
+  Html.CssHelpers.withNamespace "lazyNcaa"
+
 
 view : Model -> Html Msg
 view model =
   Html.main_
-    [ A.id "tournament" ] <|
-      [ Html.node "link"
-        [ A.href "/style.css"
-        , A.rel "stylesheet"
-        ]
-        []
-      ] ++ tourney model.tournament
+    [ id S.Tournament ]
+    ( tourney model.tournament )
 
 tourney : Array Round -> List (Html Msg)
 tourney =
@@ -30,11 +29,22 @@ groupIntoRounds =
 
 layout : (List (List (Html Msg)), List (Html Msg), List (List (Html Msg))) -> List (Html Msg)
 layout (left, finals, right) =
-  List.concat
-     [ List.indexedMap (\num round -> Html.ul [ A.class ("round round-" ++ (toString num)) ] (spacer :: round)) left
-     , finalsHtml finals
-     , List.reverse <| List.indexedMap (\num round -> Html.ul [ A.class ("round round-right round-" ++ (toString num)) ] (spacer :: round)) right
-     ]
+  let
+    ul isRight num round =
+      Html.ul
+        [ classList
+            [ (S.Round, True)
+            , (S.RoundN num, True)
+            , (S.RightHalf, isRight)
+            ]
+        ]
+        (spacer :: round)
+  in
+    List.concat
+       [ List.indexedMap (ul False) left
+       , finalsHtml finals
+       , List.reverse <| List.indexedMap (ul True) right
+       ]
 
 leftRightBreak : List (List a) -> (List (List a), List a, List (List a))
 leftRightBreak bracket =
@@ -51,7 +61,7 @@ finalsHtml : List (Html Msg) -> List (Html Msg)
 finalsHtml finals =
   case finals of
     champion :: left :: right :: [] ->
-      [ Html.ul [ A.class "round finals" ]
+      [ Html.ul [ class [ S.Round, S.Finals ] ]
           [ champion
           , left
           , right
@@ -85,9 +95,9 @@ htmlizeChampion round =
       team = Maybe.andThen extractTeam <| Array.get 0 round
       html x =
         [ Html.li
-            [ A.class "champion" ]
+            [ class [S.Champion] ]
             [ Html.div
-                [ A.class "team" ]
+                [ class [S.Team] ]
                 [ Html.text <| Maybe.withDefault "-" <| Maybe.map .name team ]
             ]
         ]
@@ -103,9 +113,15 @@ htmlizeFinals =
             team = extractTeam app
         in
           [ Html.li
-              [ A.class <| "final " ++ (if i == 0 then "final-left" else "final-right"), E.onClick <| PickWinner 5 i ]
+              [ classList
+                  [ (S.Finals, True)
+                  , (S.FinalLeft, i == 0)
+                  , (S.FinalRight, i /= 0)
+                  ]
+              , E.onClick <| PickWinner 5 i
+              ]
               [ Html.div
-                  [ A.class "team" ]
+                  [ class [S.Team] ]
                   [ Html.text <| Maybe.withDefault "-" <| Maybe.map .name team ]
               ]
           ]
@@ -131,7 +147,9 @@ htmlizeTopLine roundNum lineNum app =
           Nothing -> ("-", "")
       content =
         if roundNum == 0 then
-          [ Html.span [ A.class "seed" ] [ Html.text seed ]
+          [ Html.span
+              [ class [S.Seed] ]
+              [ Html.text seed ]
           , Html.text teamName
           ]
         else
@@ -140,7 +158,9 @@ htmlizeTopLine roundNum lineNum app =
 
   in
     [ Html.li
-        [ A.class "game game-top", E.onClick <| PickWinner roundNum lineNum ]
+        [ class [S.Game, S.GameTop]
+        , E.onClick <| PickWinner roundNum lineNum
+        ]
         content
     ]
 
@@ -153,7 +173,9 @@ htmlizeBottomLine roundNum lineNum app =
           Nothing -> ("-", "")
       content =
         if roundNum == 0 then
-          [ Html.span [ A.class "seed" ] [ Html.text seed ]
+          [ Html.span
+              [ class [S.Seed] ]
+              [ Html.text seed ]
           , Html.text teamName
           ]
         else
@@ -161,12 +183,16 @@ htmlizeBottomLine roundNum lineNum app =
           ]
   in
     [ Html.li
-        [ A.class "game game-spacer", E.onClick <| PickWinner roundNum lineNum ]
+        [ class [S.Game, S.GameSpacer]
+        , E.onClick <| PickWinner roundNum lineNum
+        ]
         [ Html.div
-            [ A.class "team" ]
+            [ class [S.Team] ]
             content
         ]
-    , Html.li [ A.class "game game-bottom" ] []
+    , Html.li
+        [ class [S.Game, S.GameBottom] ]
+        []
     , spacer
     ]
 
@@ -181,10 +207,10 @@ extractTeam app =
 
 spacer : Html Msg
 spacer =
-  Html.li [A.class "spacer"] [ Html.text " " ]
+  Html.li [class [S.Spacer]] [ Html.text " " ]
 
 randomizeButton : Html Msg
 randomizeButton =
   Html.li
-    [ A.class "randomizer" ]
+    [ class [S.Randomizer] ]
     [ Html.button [ E.onClick Randomize ] [ Html.text "Randomize" ] ]

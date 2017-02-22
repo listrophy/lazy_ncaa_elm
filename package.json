@@ -2,6 +2,7 @@
   "repository": "https://github.com/listrophy/lazy_ncaa_elm",
   "license": "Apache-2.0",
   "devDependencies": {
+    "elm-css": "^0.6.0",
     "elm-live": "^2.7.4"
   }
 }
