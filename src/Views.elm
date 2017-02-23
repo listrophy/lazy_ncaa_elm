@@ -1,17 +1,31 @@
 module Views exposing (..)
 
 import Array exposing (Array)
-import Html exposing (Html)
+import Html exposing (Html, li, span, text)
 import Html.CssHelpers
 import Html.Events as E
-import List.Extra as List
-import Messages exposing (Msg(..))
+import Html.Lazy
+import List.Extra as List exposing (elemIndex)
+import Messages exposing (Msg, Msg(..))
 import Models exposing (Appearance, Appearance(..), Game, Model, Round, Team)
 import Style as S
 
 { id, class, classList } =
   Html.CssHelpers.withNamespace "lazyNcaa"
 
+type Side
+  = Left
+  | Right
+
+type Column
+  = RoundColumn Int Side (List Renderable)
+  | FinalsColumn (Renderable, Renderable, Renderable)
+
+type alias Renderable =
+  { round : Int
+  , line : Int
+  , appearance : Appearance
+  }
 
 view : Model -> Html Msg
 view model =
@@ -21,196 +35,163 @@ view model =
 
 tourney : Array Round -> List (Html Msg)
 tourney =
-  layout << groupIntoRounds << htmlizeAppearances
+  columnize >> List.map renderColumn
 
-groupIntoRounds : List (List (Html Msg)) -> (List (List (Html Msg)), List (Html Msg), List (List (Html Msg)))
-groupIntoRounds =
-  leftRightBreak << List.reverse
+columnize : Array (Array Appearance) -> List Column
+columnize =
+  Array.toIndexedList
+    >> List.map (\(roundNum, round)-> Array.indexedMap (Renderable roundNum) round |> Array.toList)
+    >> renderablesToColumns 0
 
-layout : (List (List (Html Msg)), List (Html Msg), List (List (Html Msg))) -> List (Html Msg)
-layout (left, finals, right) =
-  let
-    ul isRight num round =
+renderColumn : Column -> Html Msg
+renderColumn =
+  Html.Lazy.lazy renderColumn_
+
+renderColumn_ : Column -> Html Msg
+renderColumn_ column =
+  case column of
+    RoundColumn roundNum side renderables ->
       Html.ul
         [ classList
             [ (S.Round, True)
-            , (S.RoundN num, True)
-            , (S.RightHalf, isRight)
+            , (S.RightHalf, isRight column)
+            , (S.RoundN roundNum, True)
             ]
         ]
-        (spacer :: round)
-  in
-    List.concat
-       [ List.indexedMap (ul False) left
-       , finalsHtml finals
-       , List.reverse <| List.indexedMap (ul True) right
-       ]
+        (renderGenericColumn side renderables)
 
-leftRightBreak : List (List a) -> (List (List a), List a, List (List a))
-leftRightBreak bracket =
-  case bracket of
-    champion :: finalists :: rest ->
-      let
-          (left, right) = List.unzip <| List.map halve rest
-      in
-         (List.reverse left, List.concat [champion, finalists], List.reverse right)
+    FinalsColumn (leftFinalist, rightFinalist, champion) ->
+      Html.ul
+        [ class [ S.Round, S.Finals ] ]
+        [ renderChampion champion
+        , renderFinalist leftFinalist
+        , renderFinalist rightFinalist
+        , randomizeButton
+        ]
+
+renderGenericColumn : Side -> List Renderable -> List (Html Msg)
+renderGenericColumn side renderables =
+  case renderables of
+    top :: bottom :: tl ->
+      [ spacer
+      , renderAppearance side top
+      , gameSpacer
+      , renderAppearance side bottom
+      ] ++ renderGenericColumn side tl
+    [] ->
+      [spacer]
     _ ->
-      ([], [], [])
+      []
 
-finalsHtml : List (Html Msg) -> List (Html Msg)
-finalsHtml finals =
-  case finals of
-    champion :: left :: right :: [] ->
-      [ Html.ul [ class [ S.Round, S.Finals ] ]
-          [ champion
-          , left
-          , right
-          , randomizeButton
-          ]
-      ]
+renderChampion : Renderable -> Html Msg
+renderChampion renderable =
+  li
+    []
+    [ appearanceText renderable.appearance ]
 
-    _ -> []
+renderFinalist : Renderable -> Html Msg
+renderFinalist renderable =
+  li
+    [ E.onClick <| clickWinner renderable ]
+    [ appearanceText renderable.appearance ]
+
+renderablesToColumns : Int -> List (List Renderable) -> List Column
+renderablesToColumns roundNum list =
+  case list of
+    [finalist1, finalist2] :: [champion] :: [] ->
+      [FinalsColumn (finalist1, finalist2, champion)]
+
+    hd :: tl ->
+      let
+          nextRound = renderablesToColumns (roundNum + 1) tl
+          (left, right) = halve hd
+          toColumn =
+            RoundColumn roundNum
+      in
+          List.concat
+            [ [toColumn Left left]
+            , nextRound
+            , [toColumn Right right]
+            ]
+    _ ->
+      []
+
+gameSpacer : Html Msg
+gameSpacer =
+  li [class [S.GameSpacer]] [ text " " ]
+
+spacer : Html Msg
+spacer =
+  li [class [S.Spacer]] [ text " " ]
+
+randomizeButton : Html Msg
+randomizeButton =
+  li
+    [ class [S.Randomizer] ]
+    [ Html.button [ E.onClick Randomize ] [ text "Randomize" ] ]
+
+renderAppearance : Side -> Renderable -> Html Msg
+renderAppearance side renderable =
+  case renderable.appearance of
+    Seeded team ->
+      renderRound0Appearance side renderable team
+    Winner game ->
+      renderRoundNAppearance side renderable game
+
+renderRound0Appearance : Side -> Renderable -> Team -> Html Msg
+renderRound0Appearance side renderable team =
+  case side of
+    Left ->
+      round0Elem renderable <|
+        [ span [class [S.Seed]] [ text <| toString team.seed ]
+        , span [class [S.Team]] [ teamText team ]
+        ]
+    Right ->
+      round0Elem renderable <|
+        [ span [class [S.Team]] [ teamText team ]
+        , span [class [S.Seed]] [ text <| toString team.seed ]
+        ]
+
+round0Elem : Renderable -> List (Html Msg) -> Html Msg
+round0Elem renderable =
+  li
+    [ E.onClick <| clickWinner renderable
+    , class [S.Appearance]
+    ]
+
+renderRoundNAppearance : Side -> Renderable -> Game -> Html Msg
+renderRoundNAppearance side renderable game =
+  li
+    [ class [ S.Appearance ]
+    , E.onClick <| clickWinner renderable
+    ]
+    [ gameText game ]
+
+gameText : Game -> Html a
+gameText =
+  text << Maybe.withDefault "-" << Maybe.map .name << .winner
+
+teamText : Team -> Html a
+teamText =
+  text << .name
+
+appearanceText : Appearance -> Html a
+appearanceText appearance =
+  case appearance of
+    Seeded team -> teamText team
+    Winner game -> gameText game
+
+clickWinner : Renderable -> Msg
+clickWinner {round, line} =
+  PickWinner round line
 
 halve : List a -> (List a, List a)
 halve list =
   List.splitAt ((List.length list) // 2) list
 
-htmlizeAppearances : Array Round -> List (List (Html Msg))
-htmlizeAppearances =
-  Array.indexedMap htmlizeRound
-    >> Array.toList
-
-htmlizeRound : Int -> Round -> List (Html Msg)
-htmlizeRound roundNum =
-  if roundNum == 6 then
-    htmlizeChampion
-  else if roundNum == 5 then
-    htmlizeFinals
-  else
-    htmlizeGenericRound roundNum
-
-htmlizeChampion : Round -> List (Html Msg)
-htmlizeChampion round =
-  let
-      team = Maybe.andThen extractTeam <| Array.get 0 round
-      html x =
-        [ Html.li
-            [ class [S.Champion] ]
-            [ Html.div
-                [ class [S.Team] ]
-                [ Html.text <| Maybe.withDefault "-" <| Maybe.map .name team ]
-            ]
-        ]
-  in
-     List.concat << Array.toList << Array.map html
-      <| round
-
-htmlizeFinals : Round -> List (Html Msg)
-htmlizeFinals =
-  let
-      html i app =
-        let
-            team = extractTeam app
-        in
-          [ Html.li
-              [ classList
-                  [ (S.Finals, True)
-                  , (S.FinalLeft, i == 0)
-                  , (S.FinalRight, i /= 0)
-                  ]
-              , E.onClick <| PickWinner 5 i
-              ]
-              [ Html.div
-                  [ class [S.Team] ]
-                  [ Html.text <| Maybe.withDefault "-" <| Maybe.map .name team ]
-              ]
-          ]
-  in
-    List.concat << Array.toList << Array.indexedMap html
-
-htmlizeGenericRound : Int -> Round -> List (Html Msg)
-htmlizeGenericRound roundNum =
-  List.concat << Array.toList << Array.indexedMap (htmlizeAppearance roundNum)
-
-htmlizeAppearance : Int -> Int -> Appearance -> List (Html Msg)
-htmlizeAppearance roundNum lineNum =
-  case lineNum % 2 of
-    0 -> htmlizeTopLine roundNum lineNum
-    _ -> htmlizeBottomLine roundNum lineNum
-
-htmlizeTopLine : Int -> Int -> Appearance -> List (Html Msg)
-htmlizeTopLine roundNum lineNum app =
-  let
-      (teamName, seed) =
-        case extractTeam app of
-          Just team -> (team.name, toString team.seed)
-          Nothing -> ("-", "")
-      content =
-        if roundNum == 0 then
-          [ Html.span
-              [ class [S.Seed] ]
-              [ Html.text seed ]
-          , Html.text teamName
-          ]
-        else
-          [ Html.text teamName
-          ]
-
-  in
-    [ Html.li
-        [ class [S.Game, S.GameTop]
-        , E.onClick <| PickWinner roundNum lineNum
-        ]
-        content
-    ]
-
-htmlizeBottomLine : Int -> Int -> Appearance -> List (Html Msg)
-htmlizeBottomLine roundNum lineNum app =
-  let
-      (teamName, seed) =
-        case extractTeam app of
-          Just team -> (team.name, toString team.seed)
-          Nothing -> ("-", "")
-      content =
-        if roundNum == 0 then
-          [ Html.span
-              [ class [S.Seed] ]
-              [ Html.text seed ]
-          , Html.text teamName
-          ]
-        else
-          [ Html.text teamName
-          ]
-  in
-    [ Html.li
-        [ class [S.Game, S.GameSpacer]
-        , E.onClick <| PickWinner roundNum lineNum
-        ]
-        [ Html.div
-            [ class [S.Team] ]
-            content
-        ]
-    , Html.li
-        [ class [S.Game, S.GameBottom] ]
-        []
-    , spacer
-    ]
-
-extractTeam : Appearance -> Maybe Team
-extractTeam app =
-  case app of
-    Seeded team ->
-      Just team
-    Winner game ->
-      game.winner
-
-
-spacer : Html Msg
-spacer =
-  Html.li [class [S.Spacer]] [ Html.text " " ]
-
-randomizeButton : Html Msg
-randomizeButton =
-  Html.li
-    [ class [S.Randomizer] ]
-    [ Html.button [ E.onClick Randomize ] [ Html.text "Randomize" ] ]
+isRight : Column -> Bool
+isRight column =
+  case column of
+    RoundColumn _ Left _ -> False
+    RoundColumn _ _ _ -> True
+    _ -> False
