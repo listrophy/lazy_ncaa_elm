@@ -19,6 +19,8 @@ type CssClasses
   | FinalLeft
   | FinalRight
   | Randomizer
+  | CurrentHover
+  | AncestorHover
 
 type CssIds
   = Tournament
@@ -37,6 +39,7 @@ css =
       , rounding
       , spacers
       , seeds
+      , hovering
       ]
 
 overallPage : List Snippet
@@ -171,6 +174,14 @@ seeds =
       , lineHeight fontSize_
       , display inlineBlock
       ]
+  ]
+
+hovering : List Snippet
+hovering =
+  [ class CurrentHover
+      [ important <| backgroundColor <| hex "bbb"]
+  , class AncestorHover
+      [ important <| backgroundColor <| hex "ccc"]
   ]
 
 connectorColor : Color

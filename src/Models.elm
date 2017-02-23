@@ -5,10 +5,11 @@ module Models exposing (
   Appearance(..),
   model,
   randomizeBracket,
+  teamAt,
+  extractTeam,
   Round, SubRound)
 
 import Array exposing (Array)
-import Dict exposing (Dict)
 import Rando exposing (Rando)
 
 type alias Model =
@@ -17,6 +18,7 @@ type alias Model =
    -- initial random value & seed.
   { rando : Maybe Rando
   , tournament : Array Round
+  , hovered : Maybe (Int, Int)
   }
 
 type alias Game =
@@ -40,7 +42,21 @@ model : Model
 model =
   { rando = Nothing
   , tournament = teamArray
+  , hovered = Nothing
   }
+
+teamAt : Model -> Int -> Int -> Maybe Team
+teamAt model round line =
+  model.tournament
+    |> Array.get round
+    |> Maybe.andThen (Array.get line)
+    |> Maybe.andThen extractTeam
+
+extractTeam : Appearance -> Maybe Team
+extractTeam appearance =
+  case appearance of
+    Seeded team -> Just team
+    Winner game -> game.winner
 
 -- TODO: implement this
 randomizeBracket : Model -> Model

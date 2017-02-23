@@ -7,7 +7,7 @@ import Html.Events as E
 import Html.Lazy
 import List.Extra as List exposing (elemIndex)
 import Messages exposing (Msg, Msg(..))
-import Models exposing (Appearance, Appearance(..), Game, Model, Round, Team)
+import Models exposing (Appearance, Appearance(..), Game, Model, Round, Team, extractTeam, teamAt)
 import Style as S
 
 { id, class, classList } =
@@ -31,11 +31,11 @@ view : Model -> Html Msg
 view model =
   Html.main_
     [ id S.Tournament ]
-    ( tourney model.tournament )
+    ( tourney model model.tournament )
 
-tourney : Array Round -> List (Html Msg)
-tourney =
-  columnize >> List.map renderColumn
+tourney : Model -> Array Round -> List (Html Msg)
+tourney model =
+  columnize >> List.map (renderColumn model)
 
 columnize : Array (Array Appearance) -> List Column
 columnize =
@@ -43,12 +43,12 @@ columnize =
     >> List.map (\(roundNum, round)-> Array.indexedMap (Renderable roundNum) round |> Array.toList)
     >> renderablesToColumns 0
 
-renderColumn : Column -> Html Msg
-renderColumn =
-  Html.Lazy.lazy renderColumn_
+renderColumn : Model -> Column -> Html Msg
+renderColumn model =
+  Html.Lazy.lazy <| renderColumn_ model
 
-renderColumn_ : Column -> Html Msg
-renderColumn_ column =
+renderColumn_ : Model -> Column -> Html Msg
+renderColumn_ model column =
   case column of
     RoundColumn roundNum side renderables ->
       Html.ul
@@ -58,7 +58,7 @@ renderColumn_ column =
             , (S.RoundN roundNum, True)
             ]
         ]
-        (renderGenericColumn side renderables)
+        (renderGenericColumn side renderables model)
 
     FinalsColumn (leftFinalist, rightFinalist, champion) ->
       Html.ul
@@ -69,15 +69,15 @@ renderColumn_ column =
         , randomizeButton
         ]
 
-renderGenericColumn : Side -> List Renderable -> List (Html Msg)
-renderGenericColumn side renderables =
+renderGenericColumn : Side -> List Renderable -> Model -> List (Html Msg)
+renderGenericColumn side renderables model =
   case renderables of
     top :: bottom :: tl ->
       [ spacer
-      , renderAppearance side top
+      , renderAppearance side top model
       , gameSpacer
-      , renderAppearance side bottom
-      ] ++ renderGenericColumn side tl
+      , renderAppearance side bottom model
+      ] ++ renderGenericColumn side tl model
     [] ->
       [spacer]
     _ ->
@@ -130,42 +130,85 @@ randomizeButton =
     [ class [S.Randomizer] ]
     [ Html.button [ E.onClick Randomize ] [ text "Randomize" ] ]
 
-renderAppearance : Side -> Renderable -> Html Msg
-renderAppearance side renderable =
+renderAppearance : Side -> Renderable -> Model -> Html Msg
+renderAppearance side renderable model =
   case renderable.appearance of
     Seeded team ->
-      renderRound0Appearance side renderable team
+      renderRound0Appearance side renderable team model
     Winner game ->
-      renderRoundNAppearance side renderable game
+      renderRoundNAppearance side renderable game model
 
-renderRound0Appearance : Side -> Renderable -> Team -> Html Msg
-renderRound0Appearance side renderable team =
+renderRound0Appearance : Side -> Renderable -> Team -> Model -> Html Msg
+renderRound0Appearance side renderable team model =
   case side of
     Left ->
-      round0Elem renderable <|
+      round0Elem renderable model <|
         [ span [class [S.Seed]] [ text <| toString team.seed ]
         , span [class [S.Team]] [ teamText team ]
         ]
     Right ->
-      round0Elem renderable <|
+      round0Elem renderable model <|
         [ span [class [S.Team]] [ teamText team ]
         , span [class [S.Seed]] [ text <| toString team.seed ]
         ]
 
-round0Elem : Renderable -> List (Html Msg) -> Html Msg
-round0Elem renderable =
+round0Elem : Renderable -> Model -> List (Html Msg) -> Html Msg
+round0Elem renderable model =
   li
     [ E.onClick <| clickWinner renderable
-    , class [S.Appearance]
+    , E.onMouseEnter <| MouseEntered renderable.round renderable.line
+    , E.onMouseLeave <| MouseLeft renderable.round renderable.line
+    , classList
+        [ (S.Appearance, True)
+        , (S.CurrentHover, isHovering model renderable)
+        , (S.AncestorHover, isAncestorOfHover model renderable)
+        ]
     ]
 
-renderRoundNAppearance : Side -> Renderable -> Game -> Html Msg
-renderRoundNAppearance side renderable game =
+renderRoundNAppearance : Side -> Renderable -> Game -> Model -> Html Msg
+renderRoundNAppearance side renderable game model =
   li
-    [ class [ S.Appearance ]
+    [ classList
+        [ (S.Appearance, True)
+        , (S.CurrentHover, isHovering model renderable)
+        , (S.AncestorHover, isAncestorOfHover model renderable)
+        ]
     , E.onClick <| clickWinner renderable
+    , E.onMouseEnter <| MouseEntered renderable.round renderable.line
+    , E.onMouseLeave <| MouseLeft renderable.round renderable.line
     ]
     [ gameText game ]
+
+isHovering : Model -> Renderable -> Bool
+isHovering model renderable =
+  case model.hovered of
+    Nothing -> False
+    Just (round, line) ->
+      let
+          tester = round == renderable.round && line == renderable.line
+      in
+        case renderable.appearance of
+          Seeded _ -> tester
+          Winner game ->
+            case game.winner of
+              Nothing -> False
+              Just _ -> tester
+
+
+isAncestorOfHover : Model -> Renderable -> Bool
+isAncestorOfHover model renderable =
+  case model.hovered of
+    Nothing -> False
+    Just (round, line) ->
+      let
+        hoveredTeam = teamAt model round line
+        currentTeam = extractTeam renderable.appearance
+      in
+        (not <| isHovering model renderable) &&
+          (currentTeam
+            |> Maybe.map2 (==) hoveredTeam
+            |> Maybe.withDefault False)
+
 
 gameText : Game -> Html a
 gameText =

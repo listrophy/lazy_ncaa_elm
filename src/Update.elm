@@ -1,11 +1,10 @@
 module Update exposing (update)
 
 import Array exposing (Array)
-import Monocle.Optional as Optional exposing (Optional)
-import Monocle.Common as Monocle
-
 import Messages exposing (Msg(..))
-import Models exposing (Model, Round, Appearance(..), Game, Team)
+import Models exposing (Appearance(..), Game, Model, Round, Team)
+import Monocle.Common as Monocle
+import Monocle.Optional as Optional exposing (Optional)
 import Rando
 
 update : Msg -> Model -> (Model, Cmd Msg)
@@ -22,11 +21,16 @@ update msg ({rando, tournament} as model) =
           (Models.randomizeBracket newModel, Cmd.none)
 
     PickWinner roundNum lineNum ->
-      let _ = Debug.log "round, line" (roundNum, lineNum)
-      in ({model | tournament = pickWinner tournament roundNum lineNum}, Cmd.none)
+      {model | tournament = pickWinner tournament roundNum lineNum} ! []
 
     Randomize ->
       model ! []
+
+    MouseEntered round line ->
+      {model | hovered = Just (round, line)} ! []
+
+    MouseLeft _ _ ->
+      {model | hovered = Nothing} ! []
 
 pickWinner : Array Round -> Int -> Int -> Array Round
 pickWinner bracket roundNum lineNum =

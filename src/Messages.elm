@@ -7,3 +7,5 @@ type Msg
   | InitializeSeed Int
   | PickWinner Int Int
   | Randomize
+  | MouseEntered Int Int
+  | MouseLeft Int Int
