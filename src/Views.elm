@@ -54,7 +54,7 @@ renderColumn_ model column =
       Html.ul
         [ classList
             [ (S.Round, True)
-            , (S.RightHalf, isRight column)
+            , (S.RightHalf, isRightColumn column)
             , (S.RoundN roundNum, True)
             ]
         ]
@@ -63,11 +63,18 @@ renderColumn_ model column =
     FinalsColumn (leftFinalist, rightFinalist, champion) ->
       Html.ul
         [ class [ S.Round, S.Finals ] ]
-        [ renderChampion champion
-        , renderFinalist leftFinalist
-        , renderFinalist rightFinalist
+        [ renderBranding
+        , renderFinalist Left leftFinalist model
+        , renderChampion champion model
+        , renderFinalist Right rightFinalist model
         , randomizeButton
         ]
+
+renderBranding : Html Msg
+renderBranding =
+  li
+    [ class [ S.Branding ] ]
+    [ text "Bendyworks" ]
 
 renderGenericColumn : Side -> List Renderable -> Model -> List (Html Msg)
 renderGenericColumn side renderables model =
@@ -82,18 +89,6 @@ renderGenericColumn side renderables model =
       [spacer]
     _ ->
       []
-
-renderChampion : Renderable -> Html Msg
-renderChampion renderable =
-  li
-    []
-    [ appearanceText renderable.appearance ]
-
-renderFinalist : Renderable -> Html Msg
-renderFinalist renderable =
-  li
-    [ E.onClick <| clickWinner renderable ]
-    [ appearanceText renderable.appearance ]
 
 renderablesToColumns : Int -> List (List Renderable) -> List Column
 renderablesToColumns roundNum list =
@@ -116,19 +111,40 @@ renderablesToColumns roundNum list =
     _ ->
       []
 
-gameSpacer : Html Msg
-gameSpacer =
-  li [class [S.GameSpacer]] [ text " " ]
-
-spacer : Html Msg
-spacer =
-  li [class [S.Spacer]] [ text " " ]
-
-randomizeButton : Html Msg
-randomizeButton =
+renderChampion : Renderable -> Model -> Html Msg
+renderChampion renderable model =
   li
-    [ class [S.Randomizer] ]
-    [ Html.button [ E.onClick Randomize ] [ text "Randomize" ] ]
+    [ classList
+        [ (S.Champion, True)
+        , (S.Appearance, True)
+        , (S.CurrentHover, isHovering model renderable)
+        ]
+    , E.onMouseEnter <| MouseEntered renderable.round renderable.line
+    , E.onMouseLeave <| MouseLeft renderable.round renderable.line
+    ]
+    [ appearanceText renderable.appearance ]
+
+renderFinalist : Side -> Renderable -> Model -> Html Msg
+renderFinalist side renderable model =
+  let
+      winner =
+        extractTeam renderable.appearance
+  in
+    li
+      [ E.onClick <| clickWinner renderable
+      , E.onMouseEnter <| MouseEntered renderable.round renderable.line
+      , E.onMouseLeave <| MouseLeft renderable.round renderable.line
+      , classList
+          [ (S.Appearance, True)
+          , (S.Finalist, True)
+          , (S.FinalLeft, not <| isRight side)
+          , (S.FinalRight, isRight side)
+          , (S.CurrentHover, isHovering model renderable)
+          , (S.AncestorHover, isAncestorOfHover model renderable)
+          , (S.NotYetChosen, Maybe.Nothing == winner)
+          ]
+      ]
+      [ appearanceText renderable.appearance ]
 
 renderAppearance : Side -> Renderable -> Model -> Html Msg
 renderAppearance side renderable model =
@@ -172,6 +188,7 @@ renderRoundNAppearance side renderable game model =
         [ (S.Appearance, True)
         , (S.CurrentHover, isHovering model renderable)
         , (S.AncestorHover, isAncestorOfHover model renderable)
+        , (S.NotYetChosen, Maybe.Nothing == game.winner)
         ]
     , E.onClick <| clickWinner renderable
     , E.onMouseEnter <| MouseEntered renderable.round renderable.line
@@ -210,6 +227,20 @@ isAncestorOfHover model renderable =
             |> Maybe.withDefault False)
 
 
+gameSpacer : Html Msg
+gameSpacer =
+  li [class [S.GameSpacer]] [ text " " ]
+
+spacer : Html Msg
+spacer =
+  li [class [S.Spacer]] [ text " " ]
+
+randomizeButton : Html Msg
+randomizeButton =
+  li
+    [ class [S.Randomizer] ]
+    [ Html.div [ E.onClick Randomize ] [ text "Randomize" ] ]
+
 gameText : Game -> Html a
 gameText =
   text << Maybe.withDefault "-" << Maybe.map .name << .winner
@@ -232,9 +263,14 @@ halve : List a -> (List a, List a)
 halve list =
   List.splitAt ((List.length list) // 2) list
 
-isRight : Column -> Bool
-isRight column =
+isRightColumn : Column -> Bool
+isRightColumn column =
   case column of
-    RoundColumn _ Left _ -> False
-    RoundColumn _ _ _ -> True
+    RoundColumn _ x _ -> isRight x
     _ -> False
+
+isRight : Side -> Bool
+isRight side =
+  case side of
+    Left -> False
+    Right -> True
