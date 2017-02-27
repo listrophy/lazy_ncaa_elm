@@ -40,6 +40,7 @@ css =
       , roundColumns
       , appearances
       , rounding
+      , borders
       , spacers
       , seeds
       , finalFour
@@ -50,8 +51,27 @@ css =
 overallPage : List Snippet
 overallPage =
   [ body
-      [ padding <| px 10
+      [ margin zero
       , fontFamily sansSerif
+      , minHeight <| vh 100
+      , backgroundColor grayA
+      , children
+          [ div
+              [ backgroundImage <| url "/hoop.jpg"
+              , backgroundRepeat noRepeat
+              , backgroundColor bottomColorOfBackground
+              , backgroundPosition2 px0 (px -40)
+              , minHeight <| vh 100
+              , maxWidth <| px 1280
+              , margin2 px0 auto
+              , borderLeftWidth <| px 3
+              , borderRightWidth <| px 3
+              , borderTopWidth px0
+              , borderBottomWidth px0
+              , borderColor grayB
+              , borderStyle solid
+              ]
+          ]
       ]
   ]
 
@@ -60,6 +80,7 @@ overallTournament =
     [ main_
         [ displayFlex
         , flexDirection row
+        , padding <| px 10
         ]
     , class RightHalf
         [ textAlign right
@@ -75,6 +96,8 @@ roundColumns =
       , flex3 (int 1) zero (px 110)
       , listStyle none
       , padding zero
+      , marginTop zero
+      , marginBottom zero
       , minWidth <| px 110
       ]
   ]
@@ -86,10 +109,13 @@ appearances =
       ]
   , class Appearance
       [ backgroundColor appearanceBackground
+      , color appearanceColor
       , lineHeight <| num 1.2
+      , minHeight <| px 14
       , padding2 (px 1) radius
       , overflowX hidden
       , cursor pointer
+      , border3 (px 1) solid grayA
       , withClass NotYetChosen [ cursor default ]
       ]
   ]
@@ -121,6 +147,45 @@ rounding =
           [ class Appearance
               [ nthOfType "4n+2" [ borderYNNN ] -- top
               , nthOfType "4n" [ borderNNNY ]   -- bottom
+              ]
+          ]
+      ]
+  ]
+
+borders : List Snippet
+borders =
+  [ class (RoundN 0)
+      [ descendants
+          [ class Appearance
+              [ borderLeftWidth <| px 1
+              ]
+          ]
+      , withClass RightHalf
+          [ descendants
+              [ class Appearance
+                  [ borderRightWidth <| px 1
+                  ]
+              ]
+          ]
+      ]
+  , class Appearance
+      [ borderLeftWidth px0
+      ]
+  , class RightHalf
+      [ descendants
+          [ class Appearance
+              [ borderLeftWidth <| px 1
+              , borderRightWidth px0
+              ]
+          ]
+      ]
+  , class Finals
+      [ children
+          [ class Champion
+              [ borderLeftWidth <| px 1 ]
+          , class FinalRight
+              [ borderLeftWidth <| px 1
+              , borderRightWidth px0
               ]
           ]
       ]
@@ -168,9 +233,12 @@ seeds =
 hovering : List Snippet
 hovering =
   [ class CurrentHover
-      [ important <| hoverBackgroundCurrent ]
+      [ important <| hoverBackgroundCurrent
+      , important <| hoverColorCurrent
+      ]
   , class AncestorHover
-      [ important <| hoverBackgroundAncestor ]
+      [ important <| hoverBackgroundAncestor
+      ]
   ]
 
 finalFour : List Snippet
@@ -187,11 +255,15 @@ finalFour =
           , class FinalRight [ alignSelf flexEnd, textAlign right, borderYNNY ]
           , class Champion [ centerize, borderYYYY, cursor default ]
           , class Finalist []
-          , class Branding [ centerize ]
+          , class Branding [ centerize, flexBasis <| px 150 ]
           ]
       ]
   , class Randomizer
       [ centerize
+      , flexBasis <| px 100
+      , displayFlex
+      , flexDirection column
+      , justifyContent center
       ]
   ]
 
@@ -230,19 +302,40 @@ borderNNNY = borderRadius4 px0 px0 px0 radius
 -- Colors
 
 connectorColor : Color
-connectorColor = lightGray
+connectorColor = grayA
 
 appearanceBackground : Color
-appearanceBackground = lightGray
+appearanceBackground = gray0
+appearanceColor : Color
+appearanceColor = grayB
 
 lightGray : Color
 lightGray = hex "eee"
 
 hoverBackgroundCurrent : Mixin
-hoverBackgroundCurrent = backgroundColor <| hex "bbb"
+hoverBackgroundCurrent = backgroundColor grayB
+hoverColorCurrent : Mixin
+hoverColorCurrent = color almostWhite
+
 
 hoverBackgroundAncestor : Mixin
-hoverBackgroundAncestor = backgroundColor <| hex "ccc"
+hoverBackgroundAncestor = backgroundColor grayA
+
+gray0 : Color
+gray0 = hex "c9c9c9"
+
+grayA : Color
+grayA = hex "a3a3a3"
+grayB : Color
+grayB = hex "555555"
+grayC : Color
+grayC = hex "1a1a1a"
+
+bottomColorOfBackground : Color
+bottomColorOfBackground = almostWhite
+
+almostWhite : Color
+almostWhite = hex "fbfbfb"
 
 -- button
 

@@ -74,7 +74,7 @@ renderBranding : Html Msg
 renderBranding =
   li
     [ class [ S.Branding ] ]
-    [ text "Bendyworks" ]
+    [  ]
 
 renderGenericColumn : Side -> List Renderable -> Model -> List (Html Msg)
 renderGenericColumn side renderables model =
@@ -229,11 +229,11 @@ isAncestorOfHover model renderable =
 
 gameSpacer : Html Msg
 gameSpacer =
-  li [class [S.GameSpacer]] [ text " " ]
+  li [class [S.GameSpacer]] [ text nbsp ]
 
 spacer : Html Msg
 spacer =
-  li [class [S.Spacer]] [ text " " ]
+  li [class [S.Spacer]] [ text nbsp ]
 
 randomizeButton : Html Msg
 randomizeButton =
@@ -243,11 +243,14 @@ randomizeButton =
 
 gameText : Game -> Html a
 gameText =
-  text << Maybe.withDefault "-" << Maybe.map .name << .winner
+  text << Maybe.withDefault nbsp << Maybe.map .name << .winner
 
 teamText : Team -> Html a
 teamText =
   text << .name
+
+nbsp : String
+nbsp = " "
 
 appearanceText : Appearance -> Html a
 appearanceText appearance =
