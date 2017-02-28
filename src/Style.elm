@@ -1,7 +1,7 @@
 module Style exposing (..)
 
 import Css exposing (..)
-import Css.Elements exposing (body, div, li, main_, span)
+import Css.Elements exposing (body, div, li, main_, span, footer)
 import Css.Namespace exposing (namespace)
 
 type CssClasses
@@ -46,6 +46,7 @@ css =
       , finalFour
       , hovering
       , randomize
+      , footer_
       ]
 
 overallPage : List Snippet
@@ -117,6 +118,10 @@ appearances =
       , cursor pointer
       , border3 (px 1) solid grayA
       , withClass NotYetChosen [ cursor default ]
+      ]
+  , class Champion
+      [ fontSize <| px 18
+      , minHeight <| px 22
       ]
   ]
 
@@ -264,6 +269,14 @@ finalFour =
       , displayFlex
       , flexDirection column
       , justifyContent center
+      ]
+  ]
+
+footer_ : List Snippet
+footer_ =
+  [ footer
+      [ textAlign center
+      , fontSize <| pct 80
       ]
   ]
 

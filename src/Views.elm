@@ -1,7 +1,8 @@
 module Views exposing (..)
 
 import Array exposing (Array)
-import Html exposing (Html, li, span, text)
+import Html exposing (Html, li, span, text, a)
+import Html.Attributes as A
 import Html.CssHelpers
 import Html.Events as E
 import Html.Lazy
@@ -29,9 +30,23 @@ type alias Renderable =
 
 view : Model -> Html Msg
 view model =
-  Html.main_
-    [ id S.Tournament ]
-    ( tourney model model.tournament )
+  Html.div []
+    [ Html.main_
+        [ id S.Tournament ]
+        ( tourney model model.tournament)
+    , footer model
+    ]
+
+footer : Model -> Html Msg
+footer model =
+  Html.footer []
+    [ text "© 2017 Bendyworks, Inc. Code available on "
+    , a
+        [ A.href "https://github.com/listrophy/lazy_ncaa_elm"
+        , A.target "_blank"
+        ]
+        [ text "GitHub" ]
+    ]
 
 tourney : Model -> Array Round -> List (Html Msg)
 tourney model =
