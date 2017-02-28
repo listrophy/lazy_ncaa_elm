@@ -2,18 +2,14 @@ module Update exposing (update)
 
 import Array exposing (Array)
 import Messages exposing (Msg(..))
-import Models exposing (Appearance(..), Game, Model, Randomizing(..), Round, Team, extractTeam, clearAllWinners)
+import Models exposing (Appearance(..), Game, Model, Randomizing(..), Round, Team, clearAllWinners, extractTeam)
 import Monocle.Common as Monocle
 import Monocle.Optional as Optional exposing (Optional)
-
 import Rando exposing (Rando)
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg ({randomizing, tournament} as model) =
   case msg of
-    NoOp ->
-      model ! []
-
     ClickRandomize ->
       model ! [Rando.init StartRandomizing]
 
@@ -25,9 +21,6 @@ update msg ({randomizing, tournament} as model) =
 
     PickWinner roundNum lineNum ->
       {model | tournament = pickWinner tournament roundNum lineNum} ! []
-
-    Randomize ->
-      model ! []
 
     MouseEntered round line ->
       {model | hovered = Just (round, line)} ! []
@@ -53,24 +46,10 @@ randomlyChooseNextGame model =
         >> Maybe.map Tuple.first
 
     detectIndex2d : (a -> Bool) -> Array (Array a) -> Maybe (Int, Int)
-    detectIndex2d f a2 =
-      a2
-        |> Array.toIndexedList
-        |> List.filterMap (\(i, a)-> detectIndex f a |> Maybe.map (\j->(i,j)))
-        |> List.head
-
-    detect : (a -> Bool) -> Array a -> Maybe a
-    detect f = Array.filter f >> Array.get 0
-
-    detectJust : Array (Maybe a) -> Maybe a
-    detectJust =
-      detect ((/=) Nothing)
-        >> Maybe.withDefault Nothing
-
-    detect2d : (a -> Bool) -> Array (Array a) -> Maybe a
-    detect2d f a =
-      Array.map (detect f) a
-        |> detectJust
+    detectIndex2d f =
+      Array.toIndexedList
+        >> List.filterMap (\(i, a)-> detectIndex f a |> Maybe.map (\j->(i,j)))
+        >> List.head
 
     nextUnchosenGame =
       detectIndex2d (\app ->
@@ -79,10 +58,38 @@ randomlyChooseNextGame model =
             Winner g -> g.winner == Nothing
         ) model.tournament
   in
-    case Debug.log "next unchosen game" nextUnchosenGame of
+    case nextUnchosenGame of
       Nothing -> {model | randomizing = Halted}
-      Just game ->
-        {model | randomizing = Halted}
+      Just (roundNum, lineNum) ->
+        {model | tournament = randomlyPickWinner roundNum lineNum model.tournament}
+
+randomlyPickWinner : Int -> Int -> Array Round -> Array Round
+randomlyPickWinner roundNum lineNum roundArray =
+  let
+    appA = (bracketLineOptional (roundNum - 1) (lineNum * 2)).getOption roundArray
+    appB = (bracketLineOptional (roundNum - 1) (lineNum * 2 + 1)).getOption roundArray
+  in
+    case (appA, appB) of
+      (Just a, Just b) ->
+        Optional.modify (bracketLineOptional roundNum lineNum) (determiner a b) roundArray
+      _ -> roundArray
+
+determiner : Appearance -> Appearance -> Appearance -> Appearance
+determiner a b _ =
+  let
+      winner =
+        case (a, b) of
+          (Seeded aTeam, Seeded bTeam) ->
+            Just <| strategy aTeam bTeam
+          (Winner aGame, Winner bGame) ->
+            Maybe.map2 strategy aGame.winner bGame.winner
+          _ -> Nothing
+  in
+      Winner <| Game winner
+
+strategy : Team -> Team -> Team
+strategy a b =
+  a
 
 pickWinner : Array Round -> Int -> Int -> Array Round
 pickWinner bracket roundNum lineNum =

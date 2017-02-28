@@ -4,9 +4,7 @@ import Time
 import Random
 
 type Msg
-  = NoOp
-  | PickWinner Int Int
-  | Randomize
+  = PickWinner Int Int
   | MouseEntered Int Int
   | MouseLeft Int Int
   | ClickRandomize

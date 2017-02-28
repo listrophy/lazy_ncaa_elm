@@ -14,9 +14,6 @@ import Array exposing (Array)
 import Rando exposing (Rando)
 
 type alias Model =
-   -- Ideally, rando is simply "Rando" instead of "Maybe Rando", but elm-reactor
-   -- doesn't allow flags, so we have to go through a run-loop to generate our
-   -- initial random value & seed.
   { randomizing : Randomizing
   , tournament : Array Round
   , hovered : Maybe (Int, Int)
