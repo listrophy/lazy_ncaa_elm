@@ -2,7 +2,12 @@ module Update exposing (update)
 
 import Array exposing (Array)
 import Messages exposing (Msg(..))
-import Models exposing (Appearance(..), Game, Model, Randomizing(..), Round, Team, clearAllWinners, extractTeam)
+
+import Models exposing (Model, Randomizing(..), Round, clearAllWinners, extractTeam)
+import Models.Appearance exposing (Appearance(..))
+import Models.Game exposing (Game)
+import Models.Team exposing (Team)
+
 import Monocle.Common as Monocle
 import Monocle.Optional as Optional exposing (Optional)
 import Rando exposing (Rando)
@@ -89,7 +94,7 @@ determiner a b _ =
 
 strategy : Team -> Team -> Team
 strategy a b =
-  a
+  if a.seed <= b.seed then a else b
 
 pickWinner : Array Round -> Int -> Int -> Array Round
 pickWinner bracket roundNum lineNum =

@@ -8,7 +8,11 @@ import Html.Events as E
 import Html.Lazy
 import List.Extra as List exposing (elemIndex)
 import Messages exposing (Msg(..))
-import Models exposing (Appearance, Appearance(..), Game, Model, Round, Team, extractTeam, teamAt)
+import Models exposing (Model, Round, extractTeam, teamAt)
+import Models.Appearance exposing (Appearance(..))
+import Models.Game exposing (Game)
+import Models.Team exposing (Team)
+
 import Style as S
 
 { id, class, classList } =

@@ -1,16 +1,18 @@
 module Models exposing (
   Model,
-  Game,
-  Team,
-  Appearance(..),
   Randomizing(..),
   model,
   teamAt,
   extractTeam,
   clearAllWinners,
-  Round, SubRound)
+  Round, SubRound, Bracket)
 
 import Array exposing (Array)
+
+import Models.Appearance exposing (..)
+import Models.Game exposing (..)
+import Models.Team exposing (..)
+
 import Rando exposing (Rando)
 
 type alias Model =
@@ -24,22 +26,10 @@ type Randomizing
   | Starting
   | Randomizing Rando
 
-type alias Game =
-  { winner : Maybe Team
-  }
-
-type Appearance
-  = Winner Game
-  | Seeded Team
-
 type alias Round = Array Appearance
 type alias SubRound = Round
 
-type alias Team =
-  { name : String
-  , region : Int
-  , seed : Int
-  }
+type alias Bracket = Array Round
 
 model : Model
 model =
@@ -61,7 +51,7 @@ extractTeam appearance =
     Seeded team -> Just team
     Winner game -> game.winner
 
-clearAllWinners : Array Round -> Array Round
+clearAllWinners : Bracket -> Bracket
 clearAllWinners =
   let
       appearanceClearer app =
