@@ -2,18 +2,16 @@ module Update exposing (update)
 
 import Array exposing (Array)
 import Messages exposing (Msg(..))
-
-import Models exposing (Model, Randomizing(..), Round, clearAllWinners, extractTeam)
-import Models.Appearance exposing (Appearance(..))
+import Models exposing (Model, Randomizing(..), clearAllWinners)
+import Models.Appearance exposing (Appearance(..), extractTeam, setWinner)
+import Models.Bracket exposing (Round, appAt)
 import Models.Game exposing (Game)
 import Models.Team exposing (Team)
-
-import Monocle.Common as Monocle
 import Monocle.Optional as Optional exposing (Optional)
 import Rando exposing (Rando)
 
 update : Msg -> Model -> (Model, Cmd Msg)
-update msg ({randomizing, tournament} as model) =
+update msg ({randomizing, bracket} as model) =
   case msg of
     ClickRandomize ->
       model ! [Rando.init StartRandomizing]
@@ -25,7 +23,7 @@ update msg ({randomizing, tournament} as model) =
       randomlyChooseNextGame model ! []
 
     PickWinner roundNum lineNum ->
-      {model | tournament = pickWinner tournament roundNum lineNum} ! []
+      pickWinner model roundNum lineNum ! []
 
     MouseEntered round line ->
       {model | hovered = Just (round, line)} ! []
@@ -36,7 +34,7 @@ update msg ({randomizing, tournament} as model) =
 startRandomizing : Rando -> Model -> Model
 startRandomizing rando model =
   { model
-  | tournament = clearAllWinners model.tournament
+  | bracket = clearAllWinners model.bracket
   , randomizing = Randomizing rando
   }
 
@@ -61,22 +59,22 @@ randomlyChooseNextGame model =
           case app of
             Seeded _ -> False
             Winner g -> g.winner == Nothing
-        ) model.tournament
+        ) model.bracket
   in
     case nextUnchosenGame of
       Nothing -> {model | randomizing = Halted}
       Just (roundNum, lineNum) ->
-        {model | tournament = randomlyPickWinner roundNum lineNum model.tournament}
+        {model | bracket = randomlyPickWinner roundNum lineNum model.bracket}
 
 randomlyPickWinner : Int -> Int -> Array Round -> Array Round
 randomlyPickWinner roundNum lineNum roundArray =
   let
-    appA = (bracketLineOptional (roundNum - 1) (lineNum * 2)).getOption roundArray
-    appB = (bracketLineOptional (roundNum - 1) (lineNum * 2 + 1)).getOption roundArray
+    appA = (appAt (roundNum - 1) (lineNum * 2)).getOption roundArray
+    appB = (appAt (roundNum - 1) (lineNum * 2 + 1)).getOption roundArray
   in
     case (appA, appB) of
       (Just a, Just b) ->
-        Optional.modify (bracketLineOptional roundNum lineNum) (determiner a b) roundArray
+        Optional.modify (appAt roundNum lineNum) (determiner a b) roundArray
       _ -> roundArray
 
 determiner : Appearance -> Appearance -> Appearance -> Appearance
@@ -96,55 +94,51 @@ strategy : Team -> Team -> Team
 strategy a b =
   if a.seed <= b.seed then a else b
 
-pickWinner : Array Round -> Int -> Int -> Array Round
-pickWinner bracket roundNum lineNum =
+pickWinner : Model -> Int -> Int -> Model
+pickWinner ({bracket} as model) roundNum lineNum =
   let
-      maybePickedTeam = (bracketLineOptional roundNum lineNum).getOption bracket
-  in
-     case maybePickedTeam of
-       Nothing ->
-         bracket
-
-       Just (Seeded team) ->
-         bracket
-          |> modifyWinner (roundNum + 1) (lineNum // 2) team
-
-       Just (Winner game) ->
-         case game.winner of
-           Nothing -> bracket
-           Just team ->
+      maybePickedTeam = (appAt roundNum lineNum).getOption model.bracket
+      newBracket =
+         case maybePickedTeam of
+           Nothing ->
              bracket
-               |> modifyWinner (roundNum + 1) (lineNum // 2) team
 
-modifyWinner : Int -> Int -> Team -> Array Round -> Array Round
-modifyWinner roundNum lineNum winningTeam roundArray =
+           Just (Seeded team) ->
+             bracket
+              |> cascadeWinner (roundNum + 1) (lineNum // 2) team
+
+           Just (Winner game) ->
+             case game.winner of
+               Nothing -> bracket
+               Just team ->
+                 bracket
+                   |> cascadeWinner (roundNum + 1) (lineNum // 2) team
+  in
+    {model | bracket = newBracket}
+
+cascadeWinner : Int -> Int -> Team -> Array Round -> Array Round
+cascadeWinner roundNum lineNum winningTeam roundArray =
   let
       optionalAppearance =
-        bracketLineOptional roundNum lineNum
+        appAt roundNum lineNum
 
       previousWinner =
         roundArray
           |> optionalAppearance.getOption
           |> Maybe.andThen extractTeam
 
-      setWinner app =
-        case app of
-          Seeded _ -> app
-          Winner game ->
-            Winner {game | winner = Just winningTeam}
-
-      cleared =
-        case previousWinner of
+      cleared winner prevWinner_ =
+        case prevWinner_ of
           Nothing -> identity
           Just prevWinner ->
-            if prevWinner == winningTeam then
+            if prevWinner == winner then
               identity
             else
               clearThisTeam roundNum lineNum prevWinner
   in
     roundArray
-      |> cleared
-      |> Optional.modify optionalAppearance setWinner
+      |> cleared winningTeam previousWinner
+      |> Optional.modify optionalAppearance (setWinner <| Just winningTeam)
 
 
 clearThisTeam : Int -> Int -> Team -> Array Round -> Array Round
@@ -163,20 +157,5 @@ clearThisTeam roundNum lineNum clearable roundArray =
       roundArray
     else
       roundArray
-        |> Optional.modify (bracketLineOptional roundNum lineNum) clearAppearance
+        |> Optional.modify (appAt roundNum lineNum) clearAppearance
         |> clearThisTeam (roundNum + 1) (lineNum // 2) clearable
-
-
-bracketLineOptional : Int -> Int -> Optional (Array Round) Appearance
-bracketLineOptional roundNum lineNum =
-  let
-      bracketToRound = Monocle.array roundNum
-      roundToLine = Monocle.array lineNum
-  in
-     Optional.compose bracketToRound roundToLine
-
-justsAreEqual : Maybe a -> Maybe a -> Bool
-justsAreEqual a b =
-  case Maybe.map2 (==) a b of
-    Nothing -> False
-    Just b -> b

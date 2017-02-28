@@ -8,10 +8,11 @@ import Html.Events as E
 import Html.Lazy
 import List.Extra as List exposing (elemIndex)
 import Messages exposing (Msg(..))
-import Models exposing (Model, Round, extractTeam, teamAt)
-import Models.Appearance exposing (Appearance(..))
+import Models exposing (Model)
+import Models.Appearance exposing (Appearance(..), extractTeam)
 import Models.Game exposing (Game)
 import Models.Team exposing (Team)
+import Models.Bracket exposing (..)
 
 import Style as S
 
@@ -37,7 +38,7 @@ view model =
   Html.div []
     [ Html.main_
         [ id S.Tournament ]
-        ( tourney model model.tournament)
+        ( tourney model model.bracket)
     , footer model
     ]
 
@@ -237,7 +238,7 @@ isAncestorOfHover model renderable =
     Nothing -> False
     Just (round, line) ->
       let
-        hoveredTeam = teamAt model round line
+        hoveredTeam = teamAt round line model.bracket
         currentTeam = extractTeam renderable.appearance
       in
         (not <| isHovering model renderable) &&

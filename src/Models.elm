@@ -2,22 +2,22 @@ module Models exposing (
   Model,
   Randomizing(..),
   model,
-  teamAt,
-  extractTeam,
-  clearAllWinners,
-  Round, SubRound, Bracket)
+  clearAllWinners)
 
 import Array exposing (Array)
 
 import Models.Appearance exposing (..)
 import Models.Game exposing (..)
 import Models.Team exposing (..)
+import Models.Bracket exposing (..)
 
 import Rando exposing (Rando)
 
+
+
 type alias Model =
   { randomizing : Randomizing
-  , tournament : Array Round
+  , bracket : Bracket
   , hovered : Maybe (Int, Int)
   }
 
@@ -26,44 +26,19 @@ type Randomizing
   | Starting
   | Randomizing Rando
 
-type alias Round = Array Appearance
-type alias SubRound = Round
 
-type alias Bracket = Array Round
 
 model : Model
 model =
   { randomizing = Halted
-  , tournament = teamArray
+  , bracket = teamArray
   , hovered = Nothing
   }
 
-teamAt : Model -> Int -> Int -> Maybe Team
-teamAt model round line =
-  model.tournament
-    |> Array.get round
-    |> Maybe.andThen (Array.get line)
-    |> Maybe.andThen extractTeam
-
-extractTeam : Appearance -> Maybe Team
-extractTeam appearance =
-  case appearance of
-    Seeded team -> Just team
-    Winner game -> game.winner
 
 clearAllWinners : Bracket -> Bracket
 clearAllWinners =
-  let
-      appearanceClearer app =
-        case app of
-          Seeded _ -> app
-          Winner g -> Winner {g | winner = Nothing}
-  in
-      Array.map <| Array.map appearanceClearer
-
-aTeam : Team
-aTeam =
-  Team "-" 1 1
+  Array.map <| Array.map (setWinner Nothing)
 
 teamArray : Array Round
 teamArray =
