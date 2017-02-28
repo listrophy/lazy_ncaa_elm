@@ -3,10 +3,11 @@ module Models exposing (
   Game,
   Team,
   Appearance(..),
+  Randomizing(..),
   model,
-  randomizeBracket,
   teamAt,
   extractTeam,
+  clearAllWinners,
   Round, SubRound)
 
 import Array exposing (Array)
@@ -16,10 +17,15 @@ type alias Model =
    -- Ideally, rando is simply "Rando" instead of "Maybe Rando", but elm-reactor
    -- doesn't allow flags, so we have to go through a run-loop to generate our
    -- initial random value & seed.
-  { rando : Maybe Rando
+  { randomizing : Randomizing
   , tournament : Array Round
   , hovered : Maybe (Int, Int)
   }
+
+type Randomizing
+  = Halted
+  | Starting
+  | Randomizing Rando
 
 type alias Game =
   { winner : Maybe Team
@@ -40,7 +46,7 @@ type alias Team =
 
 model : Model
 model =
-  { rando = Nothing
+  { randomizing = Halted
   , tournament = teamArray
   , hovered = Nothing
   }
@@ -58,10 +64,15 @@ extractTeam appearance =
     Seeded team -> Just team
     Winner game -> game.winner
 
--- TODO: implement this
-randomizeBracket : Model -> Model
-randomizeBracket m =
-  model
+clearAllWinners : Array Round -> Array Round
+clearAllWinners =
+  let
+      appearanceClearer app =
+        case app of
+          Seeded _ -> app
+          Winner g -> Winner {g | winner = Nothing}
+  in
+      Array.map <| Array.map appearanceClearer
 
 aTeam : Team
 aTeam =

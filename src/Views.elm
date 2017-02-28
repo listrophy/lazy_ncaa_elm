@@ -7,7 +7,7 @@ import Html.CssHelpers
 import Html.Events as E
 import Html.Lazy
 import List.Extra as List exposing (elemIndex)
-import Messages exposing (Msg, Msg(..))
+import Messages exposing (Msg(..))
 import Models exposing (Appearance, Appearance(..), Game, Model, Round, Team, extractTeam, teamAt)
 import Style as S
 
@@ -254,7 +254,7 @@ randomizeButton : Html Msg
 randomizeButton =
   li
     [ class [S.Randomizer] ]
-    [ Html.div [ E.onClick Randomize ] [ text "Randomize" ] ]
+    [ Html.div [ E.onClick ClickRandomize ] [ text "Randomize" ] ]
 
 gameText : Game -> Html a
 gameText =

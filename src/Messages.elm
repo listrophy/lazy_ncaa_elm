@@ -1,11 +1,14 @@
 module Messages exposing (Msg(..))
 
-import Models exposing (Appearance)
+import Time
+import Random
 
 type Msg
   = NoOp
-  | InitializeSeed Int
   | PickWinner Int Int
   | Randomize
   | MouseEntered Int Int
   | MouseLeft Int Int
+  | ClickRandomize
+  | StartRandomizing Random.Seed
+  | RandomlyChooseNextGame Time.Time

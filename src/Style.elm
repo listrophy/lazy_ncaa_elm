@@ -61,9 +61,9 @@ overallPage =
               [ backgroundImage <| url "/hoop.jpg"
               , backgroundRepeat noRepeat
               , backgroundColor bottomColorOfBackground
-              , backgroundPosition2 px0 (px -40)
+              , property "background-position" "center -40px"
               , minHeight <| vh 100
-              , maxWidth <| px 1280
+              , width <| px 1280
               , margin2 px0 auto
               , borderLeftWidth <| px 3
               , borderRightWidth <| px 3
@@ -127,23 +127,7 @@ appearances =
 
 rounding : List Snippet
 rounding =
-  [ class (RoundN 0)
-      [ descendants
-          [ class Appearance
-              [ nthOfType "4n+2" [ borderYYNY ] -- top
-              , nthOfType "4n" [ borderYNYY ]   -- bottom
-              ]
-          ]
-      , withClass RightHalf
-          [ descendants
-              [ class Appearance
-                  [ nthOfType "4n+2" [ borderYYYN ] -- top
-                  , nthOfType "4n" [ borderNYYY ]   -- bottom
-                  ]
-              ]
-          ]
-      ]
-  , class Appearance
+  [ class Appearance
       [ nthOfType "4n+2" [ borderNYNN ] -- top
       , nthOfType "4n" [ borderNNYN ]   -- bottom
       ]
@@ -152,6 +136,14 @@ rounding =
           [ class Appearance
               [ nthOfType "4n+2" [ borderYNNN ] -- top
               , nthOfType "4n" [ borderNNNY ]   -- bottom
+              ]
+          ]
+      ]
+  , class (RoundN 0)
+      [ descendants
+          [ class Appearance
+              [ nthOfType "4n+2" [ borderYYNN ] -- top
+              , nthOfType "4n" [ borderNNYY ]   -- bottom
               ]
           ]
       ]
@@ -299,14 +291,10 @@ borderNYNN : Mixin
 borderNYNN = borderRadius4 px0 radius px0 px0
 borderNNYN : Mixin
 borderNNYN = borderRadius4 px0 px0 radius px0
-borderYYNY : Mixin
-borderYYNY = borderRadius4 radius radius px0 radius
-borderYNYY : Mixin
-borderYNYY = borderRadius4 radius px0 radius radius
-borderYYYN : Mixin
-borderYYYN = borderRadius4 radius radius radius px0
-borderNYYY : Mixin
-borderNYYY = borderRadius4 px0 radius radius radius
+borderYYNN : Mixin
+borderYYNN = borderRadius4 radius radius px0 px0
+borderNNYY : Mixin
+borderNNYY = borderRadius4 px0 px0 radius radius
 borderYNNN : Mixin
 borderYNNN = borderRadius4 radius px0 px0 px0
 borderNNNY : Mixin
@@ -364,8 +352,8 @@ randomize =
               , textAlign center
               , whiteSpace noWrap
               , important <| textDecoration none
-              , color <| hex "fff"
-              , backgroundColor <| hex "2b90d9"
+              , color <| almostWhite
+              , backgroundColor <| grayB
               , border2 zero none
               , borderRadius <| px 4
               , fontWeight <| int 700

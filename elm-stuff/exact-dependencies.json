@@ -1,4 +1,5 @@
 {
+    "elm-lang/animation-frame": "1.0.1",
     "rtfeldman/elm-css-helpers": "2.0.1",
     "elm-lang/virtual-dom": "2.0.4",
     "rtfeldman/elm-css-util": "1.0.2",

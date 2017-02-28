@@ -4,14 +4,16 @@ import Random exposing (Seed)
 
 type alias Rando = Seed
 
-init : Int -> Rando
-init seed =
-  Random.initialSeed seed
+init : (Rando -> msg) -> Cmd msg
+init msg =
+  Random.int Random.minInt Random.maxInt
+    |> Random.map Random.initialSeed
+    |> Random.generate msg
 
-step : Rando -> (Float, Rando)
-step rando =
-  stepper rando
+step : Seed -> (Float, Rando)
+step =
+  Random.step generator
 
-stepper : Seed -> (Float, Seed)
-stepper =
-  Random.step (Random.float 0 1)
+generator : Random.Generator Float
+generator =
+  Random.float 0.0 1.0
