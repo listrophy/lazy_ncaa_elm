@@ -2,10 +2,11 @@ module Update exposing (update)
 
 import Array exposing (Array)
 import Array.Extra as Array
+import Css.Elements exposing (line)
 import Messages exposing (Msg(..))
 import Models exposing (Model, Randomizing(..), clearAllWinners)
-import Models.Appearance exposing (Appearance(..), extractTeam, mapSeedAndWinner, mapTeam, mapWinner, setWinner)
-import Models.Bracket exposing (Round, Bracket, appAt)
+import Models.Appearance exposing (Appearance(..), extractTeam, mapSeedAndWinner, mapTeam, mapWinner, setHover, setWinner)
+import Models.Bracket exposing (Bracket, Round, appAt)
 import Models.Game exposing (Game)
 import Models.Team exposing (Team)
 import Monocle.Optional as Optional exposing (Optional)
@@ -27,11 +28,11 @@ update msg ({ randomizing, bracket } as model) =
         PickWinner roundNum lineNum ->
             pickWinner model roundNum lineNum ! []
 
-        MouseEntered round line ->
-            { model | hovered = Just ( round, line ) } ! []
+        MouseEntered roundNum lineNum ->
+            { model | bracket = Optional.modify (appAt roundNum lineNum) (setHover True) bracket } ! []
 
-        MouseLeft _ _ ->
-            { model | hovered = Nothing } ! []
+        MouseLeft roundNum lineNum ->
+            { model | bracket = Optional.modify (appAt roundNum lineNum) (setHover False) bracket } ! []
 
 
 startRandomizing : Rando -> Model -> Model
@@ -80,7 +81,7 @@ determiner a b _ =
         winner =
             Maybe.map2 strategy (extractTeam a) (extractTeam b)
     in
-        Winner <| Game winner
+        Winner <| Game winner False 0 0
 
 
 strategy : Team -> Team -> Team

@@ -109,6 +109,7 @@ teamArray =
             , Team "Michigan State" 3 2
             , Team "Middle Tenn." 3 15
             ]
+                |> List.map (\x -> x False)
                 |> List.map Seeded
 
         builder l =
@@ -122,7 +123,15 @@ teamArray =
                             l
 
                         n ->
-                            builder <| (List.repeat (n // 2) <| Winner <| Game Nothing) :: l
+                            let
+                                roundNum =
+                                    7 - (round <| logBase 2 (toFloat n))
+
+                                appearances =
+                                    List.range 0 (n // 2 - 1)
+                                        |> List.map (\i -> Winner <| Game Nothing False roundNum i)
+                            in
+                                builder <| appearances :: l
     in
         builder [ firstRound ]
             |> List.reverse

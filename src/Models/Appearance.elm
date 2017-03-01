@@ -9,6 +9,16 @@ type Appearance
     | Seeded Team
 
 
+setHover : Bool -> Appearance -> Appearance
+setHover bool =
+    mapSeedAndWinner (\t -> Seeded { t | hovered = bool }) (\g -> Winner { g | hovered = bool })
+
+
+getHover : Appearance -> Bool
+getHover =
+    mapSeedAndWinner .hovered .hovered
+
+
 setWinner : Maybe Team -> Appearance -> Appearance
 setWinner teamMaybe =
     mapWinner (\g -> { g | winner = teamMaybe })
