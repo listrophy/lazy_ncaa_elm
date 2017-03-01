@@ -86,28 +86,17 @@ pickWinner ({bracket} as model) roundNum lineNum =
 
 assignWinnerInvalidatingPreviousWinner : Int -> Int -> Team -> Bracket -> Bracket
 assignWinnerInvalidatingPreviousWinner roundNum lineNum winningTeam bracket =
-  let
-      optionalAppearance =
-        appAt roundNum lineNum
+  bracket
+    |> vacateFutureWins roundNum lineNum winningTeam
+    |> Optional.modify (appAt roundNum lineNum) (setWinner <| Just winningTeam)
 
-      previousWinner =
-        bracket
-          |> optionalAppearance.getOption
-          |> Maybe.andThen extractTeam
-
-      cleared winner prevWinner_ =
-        case prevWinner_ of
-          Nothing -> identity
-          Just prevWinner ->
-            if prevWinner == winner then
-              identity
-            else
-              clearThisTeam roundNum lineNum prevWinner
-  in
-    bracket
-      |> cleared winningTeam previousWinner
-      |> Optional.modify optionalAppearance (setWinner <| Just winningTeam)
-
+vacateFutureWins : Int -> Int -> Team -> Bracket -> Bracket
+vacateFutureWins roundNum lineNum winner bracket =
+  bracket
+    |> (appAt roundNum lineNum).getOption
+    |> Maybe.andThen extractTeam
+    |> Maybe.map (\x->if x == winner then bracket else clearThisTeam roundNum lineNum x bracket)
+    |> Maybe.withDefault bracket
 
 clearThisTeam : Int -> Int -> Team -> Bracket -> Bracket
 clearThisTeam roundNum lineNum clearable bracket =
