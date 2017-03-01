@@ -18,6 +18,23 @@ mapWinner f app =
     Winner g ->
       Winner <| f g
 
+mapTeam : (Team -> bracket -> bracket) -> Appearance -> bracket -> bracket
+mapTeam f app =
+  case app of
+    Seeded t -> f t
+    Winner g ->
+      case g.winner of
+        Nothing -> identity
+        Just t -> f t
+
+mapSeedAndWinner : (Team -> a) -> (Game -> a) -> Appearance -> a
+mapSeedAndWinner fSeed fWinner app =
+  case app of
+    Seeded t -> fSeed t
+    Winner g -> fWinner g
+
+
+
 extractTeam : Appearance -> Maybe Team
 extractTeam appearance =
   case appearance of

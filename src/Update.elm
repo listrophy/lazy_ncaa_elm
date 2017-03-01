@@ -1,10 +1,11 @@
 module Update exposing (update)
 
 import Array exposing (Array)
+import Array.Extra as Array
 import Messages exposing (Msg(..))
 import Models exposing (Model, Randomizing(..), clearAllWinners)
-import Models.Appearance exposing (Appearance(..), extractTeam, setWinner)
-import Models.Bracket exposing (Round, appAt)
+import Models.Appearance exposing (Appearance(..), extractTeam, mapSeedAndWinner, mapTeam, mapWinner, setWinner)
+import Models.Bracket exposing (Round, Bracket, appAt)
 import Models.Game exposing (Game)
 import Models.Team exposing (Team)
 import Monocle.Optional as Optional exposing (Optional)
@@ -41,52 +42,30 @@ startRandomizing rando model =
 randomlyChooseNextGame : Model -> Model
 randomlyChooseNextGame model =
   let
-    detectIndex : (a -> Bool) -> Array a -> Maybe Int
-    detectIndex f =
-      Array.toIndexedList
-        >> List.filter (\(i, a)-> f a)
-        >> List.head
-        >> Maybe.map Tuple.first
-
-    detectIndex2d : (a -> Bool) -> Array (Array a) -> Maybe (Int, Int)
-    detectIndex2d f =
-      Array.toIndexedList
-        >> List.filterMap (\(i, a)-> detectIndex f a |> Maybe.map (\j->(i,j)))
-        >> List.head
-
     nextUnchosenGame =
-      detectIndex2d (\app ->
-          case app of
-            Seeded _ -> False
-            Winner g -> g.winner == Nothing
-        ) model.bracket
+      model.bracket
+        |> Array.detectIndex2d (mapSeedAndWinner (always False) (\g -> g.winner == Nothing))
   in
     case nextUnchosenGame of
       Nothing -> {model | randomizing = Halted}
       Just (roundNum, lineNum) ->
         {model | bracket = randomlyPickWinner roundNum lineNum model.bracket}
 
-randomlyPickWinner : Int -> Int -> Array Round -> Array Round
-randomlyPickWinner roundNum lineNum roundArray =
+randomlyPickWinner : Int -> Int -> Bracket -> Bracket
+randomlyPickWinner roundNum lineNum bracket =
   let
-    appA = (appAt (roundNum - 1) (lineNum * 2)).getOption roundArray
-    appB = (appAt (roundNum - 1) (lineNum * 2 + 1)).getOption roundArray
+    appA = (appAt (roundNum - 1) (lineNum * 2)).getOption bracket
+    appB = (appAt (roundNum - 1) (lineNum * 2 + 1)).getOption bracket
   in
     case (appA, appB) of
       (Just a, Just b) ->
-        Optional.modify (appAt roundNum lineNum) (determiner a b) roundArray
-      _ -> roundArray
+        Optional.modify (appAt roundNum lineNum) (determiner a b) bracket
+      _ -> bracket
 
-determiner : Appearance -> Appearance -> Appearance -> Appearance
+determiner : Appearance -> Appearance -> dummy -> Appearance
 determiner a b _ =
   let
-      winner =
-        case (a, b) of
-          (Seeded aTeam, Seeded bTeam) ->
-            Just <| strategy aTeam bTeam
-          (Winner aGame, Winner bGame) ->
-            Maybe.map2 strategy aGame.winner bGame.winner
-          _ -> Nothing
+    winner = Maybe.map2 strategy (extractTeam a) (extractTeam b)
   in
       Winner <| Game winner
 
@@ -97,33 +76,22 @@ strategy a b =
 pickWinner : Model -> Int -> Int -> Model
 pickWinner ({bracket} as model) roundNum lineNum =
   let
-      maybePickedTeam = (appAt roundNum lineNum).getOption model.bracket
+      teamChanger = mapTeam (assignWinnerInvalidatingPreviousWinner (roundNum + 1) (lineNum // 2))
       newBracket =
-         case maybePickedTeam of
-           Nothing ->
-             bracket
-
-           Just (Seeded team) ->
-             bracket
-              |> cascadeWinner (roundNum + 1) (lineNum // 2) team
-
-           Just (Winner game) ->
-             case game.winner of
-               Nothing -> bracket
-               Just team ->
-                 bracket
-                   |> cascadeWinner (roundNum + 1) (lineNum // 2) team
+        (appAt roundNum lineNum).getOption model.bracket
+          |> Maybe.map teamChanger
+          |> Maybe.withDefault identity
   in
-    {model | bracket = newBracket}
+    {model | bracket = newBracket bracket}
 
-cascadeWinner : Int -> Int -> Team -> Array Round -> Array Round
-cascadeWinner roundNum lineNum winningTeam roundArray =
+assignWinnerInvalidatingPreviousWinner : Int -> Int -> Team -> Bracket -> Bracket
+assignWinnerInvalidatingPreviousWinner roundNum lineNum winningTeam bracket =
   let
       optionalAppearance =
         appAt roundNum lineNum
 
       previousWinner =
-        roundArray
+        bracket
           |> optionalAppearance.getOption
           |> Maybe.andThen extractTeam
 
@@ -136,26 +104,20 @@ cascadeWinner roundNum lineNum winningTeam roundArray =
             else
               clearThisTeam roundNum lineNum prevWinner
   in
-    roundArray
+    bracket
       |> cleared winningTeam previousWinner
       |> Optional.modify optionalAppearance (setWinner <| Just winningTeam)
 
 
-clearThisTeam : Int -> Int -> Team -> Array Round -> Array Round
-clearThisTeam roundNum lineNum clearable roundArray =
+clearThisTeam : Int -> Int -> Team -> Bracket -> Bracket
+clearThisTeam roundNum lineNum clearable bracket =
   let
-      clearAppearance x =
-        case x of
-          Seeded _ -> x
-          Winner g ->
-            if g.winner == Just clearable then
-              Winner {g | winner = Nothing}
-            else
-              Winner g
+      clearAppearance =
+        mapWinner (\g-> if g.winner == Just clearable then {g | winner = Nothing} else g)
   in
-    if roundNum >= Array.length roundArray then
-      roundArray
+    if roundNum >= Array.length bracket then
+      bracket
     else
-      roundArray
+      bracket
         |> Optional.modify (appAt roundNum lineNum) clearAppearance
         |> clearThisTeam (roundNum + 1) (lineNum // 2) clearable
