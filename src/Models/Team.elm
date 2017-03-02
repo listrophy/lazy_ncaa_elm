@@ -6,4 +6,5 @@ type alias Team =
     , region : Int
     , seed : Int
     , hovered : Bool
+    , ancestorHovered : Bool
     }

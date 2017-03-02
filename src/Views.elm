@@ -9,7 +9,7 @@ import Html.Lazy
 import List.Extra as List exposing (elemIndex)
 import Messages exposing (Msg(..))
 import Models exposing (Model)
-import Models.Appearance exposing (Appearance(..), extractTeam, getHover)
+import Models.Appearance exposing (Appearance(..), extractTeam, getAncestorHover, getHover)
 import Models.Bracket exposing (..)
 import Models.Game exposing (Game)
 import Models.Team exposing (Team)
@@ -226,7 +226,7 @@ round0Elem renderable =
         , classList
             [ ( S.Appearance, True )
             , ( S.CurrentHover, getHover renderable.appearance )
-              -- , ( S.AncestorHover, isAncestorOfHover model renderable )
+            , ( S.AncestorHover, getAncestorHover renderable.appearance )
             ]
         ]
 
@@ -237,7 +237,7 @@ renderRoundNAppearance side renderable game =
         [ classList
             [ ( S.Appearance, True )
             , ( S.CurrentHover, getHover renderable.appearance )
-              -- , ( S.AncestorHover, isAncestorOfHover model renderable )
+            , ( S.AncestorHover, getAncestorHover renderable.appearance )
             , ( S.NotYetChosen, Maybe.Nothing == game.winner )
             ]
         , E.onClick <| clickWinner renderable
@@ -245,50 +245,6 @@ renderRoundNAppearance side renderable game =
         , E.onMouseLeave <| MouseLeft renderable.round renderable.line
         ]
         [ gameText game ]
-
-
-
--- isHovering : Model -> Renderable -> Bool
--- isHovering model renderable =
---     case model.hovered of
---         Nothing ->
---             False
---
---         Just ( round, line ) ->
---             let
---                 tester =
---                     round == renderable.round && line == renderable.line
---             in
---                 case renderable.appearance of
---                     Seeded _ ->
---                         tester
---
---                     Winner game ->
---                         case game.winner of
---                             Nothing ->
---                                 False
---
---                             Just _ ->
---                                 tester
--- isAncestorOfHover : Model -> Renderable -> Bool
--- isAncestorOfHover model renderable =
---     case model.hovered of
---         Nothing ->
---             False
---
---         Just ( round, line ) ->
---             let
---                 hoveredTeam =
---                     teamAt round line model.bracket
---
---                 currentTeam =
---                     extractTeam renderable.appearance
---             in
---                 (not <| isHovering model renderable)
---                     && (currentTeam
---                             |> Maybe.map2 (==) hoveredTeam
---                             |> Maybe.withDefault False
---                        )
 
 
 gameSpacer : Html Msg

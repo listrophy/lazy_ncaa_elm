@@ -19,6 +19,18 @@ getHover =
     mapSeedAndWinner .hovered .hovered
 
 
+setAncestorHover : Bool -> Appearance -> Appearance
+setAncestorHover bool =
+    mapSeedAndWinner
+        (\t -> Seeded { t | ancestorHovered = bool })
+        (\g -> Winner { g | ancestorHovered = bool })
+
+
+getAncestorHover : Appearance -> Bool
+getAncestorHover =
+    mapSeedAndWinner .ancestorHovered .ancestorHovered
+
+
 setWinner : Maybe Team -> Appearance -> Appearance
 setWinner teamMaybe =
     mapWinner (\g -> { g | winner = teamMaybe })

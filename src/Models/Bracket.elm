@@ -1,6 +1,7 @@
 module Models.Bracket exposing (..)
 
 import Array exposing (Array)
+import Array.Extra as Array
 import Monocle.Common as Monocle
 import Monocle.Optional as Optional exposing (Optional)
 import Models.Appearance exposing (..)
@@ -40,3 +41,26 @@ teamAt : Int -> Int -> Bracket -> Maybe Team
 teamAt round line =
     (appAt round line).getOption
         >> Maybe.andThen extractTeam
+
+
+round0line : Maybe Team -> Bracket -> Maybe Int
+round0line team bracket =
+    let
+        round0 =
+            Maybe.withDefault Array.empty <| Array.get 0 bracket
+    in
+        case team of
+            Nothing ->
+                Nothing
+
+            Just t ->
+                let
+                    teamsAreEqual mA app =
+                        case ( mA, extractTeam app ) of
+                            ( Just a, Just b ) ->
+                                a.name == b.name
+
+                            _ ->
+                                False
+                in
+                    Array.detectIndex (teamsAreEqual team) round0
