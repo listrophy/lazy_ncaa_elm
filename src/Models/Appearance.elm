@@ -79,3 +79,13 @@ extractTeam appearance =
 
         Winner game ->
             game.winner
+
+
+isUndecided : Appearance -> Bool
+isUndecided appearance =
+    case appearance of
+        Seeded _ ->
+            False
+
+        Winner g ->
+            Nothing == g.winner

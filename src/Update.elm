@@ -4,9 +4,8 @@ import Array exposing (Array)
 import Array.Extra as Array
 import Messages exposing (Msg(..))
 import Models exposing (Model, Randomizing(..), clearAllWinners)
-import Models.Appearance exposing (Appearance(..), extractTeam, mapSeedAndWinner, mapTeam, mapWinner, setHover, setWinner, setAncestorHover)
-import Models.Bracket exposing (Bracket, Round, appAt, teamAt, round0line)
-import Models.Game exposing (Game)
+import Models.Appearance exposing (Appearance, Appearance(..), extractTeam, isUndecided, mapSeedAndWinner, mapTeam, mapWinner, setAncestorHover, setHover, setWinner)
+import Models.Bracket exposing (Bracket, Round, appAt, round0line, teamAt)
 import Models.Team exposing (Team)
 import Monocle.Optional as Optional exposing (Optional)
 import Rando exposing (Rando)
@@ -46,46 +45,60 @@ setHovers roundNum lineNum bool bracket =
 
 
 setAncestorHovers : Optional Bracket Appearance -> Bool -> Bracket -> Bracket
-setAncestorHovers app bool bracket =
+setAncestorHovers hoveredApp bool bracket =
     let
         currentHoveredTeam =
-            Maybe.andThen extractTeam <| app.getOption bracket
+            Maybe.andThen extractTeam <| hoveredApp.getOption bracket
 
-        _ =
-            Debug.log "current team" <| Maybe.withDefault "?" <| Maybe.map .name currentHoveredTeam
+        round0 =
+            Maybe.withDefault Array.empty <| Array.get 0 bracket
 
-        doSetAncestorHover : Int -> Int -> Bracket -> Bracket
-        doSetAncestorHover rNum lNum brack =
-            let
-                subApp =
-                    appAt rNum lNum
-            in
-                if app == subApp then
-                    doSetAncestorHover (rNum + 1) (lNum // 2) brack
-                else
-                    case subApp.getOption brack of
-                        Nothing ->
-                            brack
+        teamName =
+            Maybe.map .name currentHoveredTeam
 
-                        Just anApp ->
-                            if Nothing == extractTeam anApp then
-                                brack
-                            else
-                                brack
-                                    |> Optional.modify subApp (setAncestorHover bool)
-                                    |> doSetAncestorHover (rNum + 1) (lNum // 2)
+        round0LineNum =
+            Array.detectIndex
+                (\app ->
+                    case app of
+                        Winner _ ->
+                            False
+
+                        Seeded t ->
+                            Just t.name == teamName
+                )
+                round0
     in
-        case currentHoveredTeam of
+        case round0LineNum of
             Nothing ->
                 bracket
 
-            Just hoveredTeam ->
-                case round0line currentHoveredTeam bracket of
-                    Nothing ->
-                        bracket
+            Just num ->
+                doSetAncestorHover 0 num teamName bool bracket
 
-                    Just aLine ->
-                        doSetAncestorHover 0 aLine bracket
+
+doSetAncestorHover : Int -> Int -> Maybe String -> Bool -> Bracket -> Bracket
+doSetAncestorHover roundNum lineNum teamName bool bracket =
+    let
+        appOptional =
+            appAt roundNum lineNum
+
+        app =
+            appOptional.getOption bracket
+
+        currTeamName =
+            Maybe.map .name <| Maybe.andThen extractTeam app
+    in
+        case app of
+            Nothing ->
+                bracket
+
+            Just actualApp ->
+                if Maybe.withDefault False <| Maybe.map2 (==) teamName currTeamName then
+                    bracket
+                        |> Optional.modify appOptional (setAncestorHover bool)
+                        |> doSetAncestorHover (roundNum + 1) (lineNum // 2) teamName bool
+                else
+                    bracket
 
 
 startRandomizing : Rando -> Model -> Model
@@ -100,8 +113,7 @@ randomlyChooseNextGame : Model -> Model
 randomlyChooseNextGame model =
     let
         nextUnchosenGame =
-            model.bracket
-                |> Array.detectIndex2d (mapSeedAndWinner (always False) (\g -> g.winner == Nothing))
+            Array.detectIndex2d isUndecided model.bracket
     in
         case nextUnchosenGame of
             Nothing ->
@@ -128,13 +140,18 @@ randomlyPickWinner roundNum lineNum bracket =
                 bracket
 
 
-determiner : Appearance -> Appearance -> dummy -> Appearance
-determiner a b _ =
+determiner : Appearance -> Appearance -> Appearance -> Appearance
+determiner a b g =
     let
         winner =
             Maybe.map2 strategy (extractTeam a) (extractTeam b)
     in
-        Winner <| Models.Game.game 0 0
+        case g of
+            Winner gg ->
+                Winner { gg | winner = winner }
+
+            Seeded t ->
+                g
 
 
 strategy : Team -> Team -> Team
@@ -155,8 +172,12 @@ pickWinner ({ bracket } as model) roundNum lineNum =
             (appAt roundNum lineNum).getOption model.bracket
                 |> Maybe.map teamChanger
                 |> Maybe.withDefault identity
+
+        hoveredBracket =
+            (newBracket bracket)
+                |> setHovers roundNum lineNum True
     in
-        { model | bracket = newBracket bracket }
+        { model | bracket = hoveredBracket }
 
 
 assignWinnerInvalidatingPreviousWinner : Int -> Int -> Team -> Bracket -> Bracket
