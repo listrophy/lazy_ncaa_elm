@@ -8,7 +8,6 @@ module Models
 
 import Array exposing (Array)
 import Models.Appearance exposing (..)
-import Models.Game exposing (..)
 import Models.Team exposing (..)
 import Models.Bracket exposing (..)
 import Rando exposing (Rando)
@@ -109,29 +108,22 @@ teamArray =
             , Team "Michigan State" 3 2
             , Team "Middle Tenn." 3 15
             ]
-                |> List.map (\x -> x False False)
-                |> List.map Seeded
+                |> List.map (\x -> Appearance (Just x) False False)
 
         builder l =
             case l of
                 [] ->
                     []
 
+                [] :: tl ->
+                    tl
+
                 x :: tl ->
-                    case List.length x of
-                        1 ->
-                            l
-
-                        n ->
-                            let
-                                roundNum =
-                                    7 - (round <| logBase 2 (toFloat n))
-
-                                appearances =
-                                    List.range 0 (n // 2 - 1)
-                                        |> List.map (\i -> Winner <| game roundNum i)
-                            in
-                                builder <| appearances :: l
+                    let
+                        appearances =
+                            List.repeat ((List.length x) // 2) <| Appearance Nothing False False
+                    in
+                        builder <| appearances :: l
     in
         builder [ firstRound ]
             |> List.reverse

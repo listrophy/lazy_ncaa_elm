@@ -40,7 +40,7 @@ clearTeamAt roundNum lineNum clearable roundArray =
 teamAt : Int -> Int -> Bracket -> Maybe Team
 teamAt round line =
     (appAt round line).getOption
-        >> Maybe.andThen extractTeam
+        >> Maybe.andThen .winner
 
 
 round0line : Maybe Team -> Bracket -> Maybe Int
@@ -56,7 +56,7 @@ round0line team bracket =
             Just t ->
                 let
                     teamsAreEqual mA app =
-                        case ( mA, extractTeam app ) of
+                        case ( mA, app.winner ) of
                             ( Just a, Just b ) ->
                                 a.name == b.name
 

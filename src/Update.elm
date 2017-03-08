@@ -4,7 +4,7 @@ import Array exposing (Array)
 import Array.Extra as Array
 import Messages exposing (Msg(..))
 import Models exposing (Model, Randomizing(..), clearAllWinners)
-import Models.Appearance exposing (Appearance, Appearance(..), extractTeam, isUndecided, mapSeedAndWinner, mapTeam, mapWinner, setAncestorHover, setHover, setWinner)
+import Models.Appearance exposing (Appearance, isUndecided, setAncestorHover, setHover, setWinner)
 import Models.Bracket exposing (Bracket, Round, appAt, round0line, teamAt)
 import Models.Team exposing (Team)
 import Monocle.Optional as Optional exposing (Optional)
@@ -48,7 +48,7 @@ setAncestorHovers : Optional Bracket Appearance -> Bool -> Bracket -> Bracket
 setAncestorHovers hoveredApp bool bracket =
     let
         currentHoveredTeam =
-            Maybe.andThen extractTeam <| hoveredApp.getOption bracket
+            Maybe.andThen .winner <| hoveredApp.getOption bracket
 
         round0 =
             Maybe.withDefault Array.empty <| Array.get 0 bracket
@@ -58,14 +58,7 @@ setAncestorHovers hoveredApp bool bracket =
 
         round0LineNum =
             Array.detectIndex
-                (\app ->
-                    case app of
-                        Winner _ ->
-                            False
-
-                        Seeded t ->
-                            Just t.name == teamName
-                )
+                (\app -> justsAreEqual teamName <| Maybe.map .name app.winner)
                 round0
     in
         case round0LineNum of
@@ -86,7 +79,7 @@ doSetAncestorHover roundNum lineNum teamName bool bracket =
             appOptional.getOption bracket
 
         currTeamName =
-            Maybe.map .name <| Maybe.andThen extractTeam app
+            Maybe.map .name <| Maybe.andThen .winner app
     in
         case app of
             Nothing ->
@@ -144,14 +137,9 @@ determiner : Appearance -> Appearance -> Appearance -> Appearance
 determiner a b g =
     let
         winner =
-            Maybe.map2 strategy (extractTeam a) (extractTeam b)
+            Maybe.map2 strategy (a.winner) (b.winner)
     in
-        case g of
-            Winner gg ->
-                Winner { gg | winner = winner }
-
-            Seeded t ->
-                g
+        { g | winner = winner }
 
 
 strategy : Team -> Team -> Team
@@ -165,33 +153,35 @@ strategy a b =
 pickWinner : Model -> Int -> Int -> Model
 pickWinner ({ bracket } as model) roundNum lineNum =
     let
-        teamChanger =
-            mapTeam (assignWinnerInvalidatingPreviousWinner (roundNum + 1) (lineNum // 2))
+        winningTeam =
+            teamAt roundNum lineNum bracket
 
         newBracket =
-            (appAt roundNum lineNum).getOption model.bracket
-                |> Maybe.map teamChanger
-                |> Maybe.withDefault identity
+            assignWinnerInvalidatingPreviousWinner (roundNum + 1) (lineNum // 2) winningTeam bracket
 
         hoveredBracket =
-            (newBracket bracket)
+            newBracket
                 |> setHovers roundNum lineNum True
     in
         { model | bracket = hoveredBracket }
 
 
-assignWinnerInvalidatingPreviousWinner : Int -> Int -> Team -> Bracket -> Bracket
-assignWinnerInvalidatingPreviousWinner roundNum lineNum winningTeam bracket =
-    bracket
-        |> vacateFutureWins roundNum lineNum winningTeam
-        |> Optional.modify (appAt roundNum lineNum) (setWinner <| Just winningTeam)
+assignWinnerInvalidatingPreviousWinner : Int -> Int -> Maybe Team -> Bracket -> Bracket
+assignWinnerInvalidatingPreviousWinner roundNum lineNum winningTeam =
+    case winningTeam of
+        Nothing ->
+            identity
+
+        Just team ->
+            vacateFutureWins roundNum lineNum team
+                >> Optional.modify (appAt roundNum lineNum) (setWinner winningTeam)
 
 
 vacateFutureWins : Int -> Int -> Team -> Bracket -> Bracket
 vacateFutureWins roundNum lineNum winner bracket =
     bracket
         |> (appAt roundNum lineNum).getOption
-        |> Maybe.andThen extractTeam
+        |> Maybe.andThen .winner
         |> Maybe.map
             (\x ->
                 if x == winner then
@@ -206,13 +196,12 @@ clearThisTeam : Int -> Int -> Team -> Bracket -> Bracket
 clearThisTeam roundNum lineNum clearable bracket =
     let
         clearAppearance =
-            mapWinner
-                (\g ->
-                    if g.winner == Just clearable then
-                        { g | winner = Nothing }
-                    else
-                        g
-                )
+            (\app ->
+                if justsAreEqual app.winner (Just clearable) then
+                    { app | winner = Nothing }
+                else
+                    app
+            )
     in
         if roundNum >= Array.length bracket then
             bracket
@@ -220,3 +209,13 @@ clearThisTeam roundNum lineNum clearable bracket =
             bracket
                 |> Optional.modify (appAt roundNum lineNum) clearAppearance
                 |> clearThisTeam (roundNum + 1) (lineNum // 2) clearable
+
+
+justsAreEqual : Maybe a -> Maybe a -> Bool
+justsAreEqual aMaybe aMaybe2 =
+    case ( aMaybe, aMaybe2 ) of
+        ( Just x, Just y ) ->
+            x == y
+
+        _ ->
+            False

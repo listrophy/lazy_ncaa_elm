@@ -1,91 +1,30 @@
 module Models.Appearance exposing (..)
 
-import Models.Game exposing (..)
 import Models.Team exposing (..)
 
 
-type Appearance
-    = Winner Game
-    | Seeded Team
+type alias Appearance =
+    { winner : Maybe Team
+    , hovered : Bool
+    , ancestorHovered : Bool
+    }
 
 
 setHover : Bool -> Appearance -> Appearance
-setHover bool =
-    mapSeedAndWinner (\t -> Seeded { t | hovered = bool }) (\g -> Winner { g | hovered = bool })
-
-
-getHover : Appearance -> Bool
-getHover =
-    mapSeedAndWinner .hovered .hovered
+setHover bool app =
+    { app | hovered = bool }
 
 
 setAncestorHover : Bool -> Appearance -> Appearance
-setAncestorHover bool =
-    mapSeedAndWinner
-        (\t -> Seeded { t | ancestorHovered = bool })
-        (\g -> Winner { g | ancestorHovered = bool })
-
-
-getAncestorHover : Appearance -> Bool
-getAncestorHover =
-    mapSeedAndWinner .ancestorHovered .ancestorHovered
+setAncestorHover bool app =
+    { app | ancestorHovered = bool }
 
 
 setWinner : Maybe Team -> Appearance -> Appearance
-setWinner teamMaybe =
-    mapWinner (\g -> { g | winner = teamMaybe })
-
-
-mapWinner : (Game -> Game) -> Appearance -> Appearance
-mapWinner f app =
-    case app of
-        Seeded _ ->
-            app
-
-        Winner g ->
-            Winner <| f g
-
-
-mapTeam : (Team -> bracket -> bracket) -> Appearance -> bracket -> bracket
-mapTeam f app =
-    case app of
-        Seeded t ->
-            f t
-
-        Winner g ->
-            case g.winner of
-                Nothing ->
-                    identity
-
-                Just t ->
-                    f t
-
-
-mapSeedAndWinner : (Team -> a) -> (Game -> a) -> Appearance -> a
-mapSeedAndWinner fSeed fWinner app =
-    case app of
-        Seeded t ->
-            fSeed t
-
-        Winner g ->
-            fWinner g
-
-
-extractTeam : Appearance -> Maybe Team
-extractTeam appearance =
-    case appearance of
-        Seeded team ->
-            Just team
-
-        Winner game ->
-            game.winner
+setWinner teamMaybe app =
+    { app | winner = teamMaybe }
 
 
 isUndecided : Appearance -> Bool
-isUndecided appearance =
-    case appearance of
-        Seeded _ ->
-            False
-
-        Winner g ->
-            Nothing == g.winner
+isUndecided app =
+    app.winner == Nothing

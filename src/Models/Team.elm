@@ -5,6 +5,4 @@ type alias Team =
     { name : String
     , region : Int
     , seed : Int
-    , hovered : Bool
-    , ancestorHovered : Bool
     }
