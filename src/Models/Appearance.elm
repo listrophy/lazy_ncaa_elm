@@ -12,7 +12,12 @@ type alias Appearance =
 
 setHover : Bool -> Appearance -> Appearance
 setHover bool app =
-    { app | hovered = bool }
+    case app.winner of
+        Nothing ->
+            app
+
+        Just _ ->
+            { app | hovered = bool }
 
 
 setAncestorHover : Bool -> Appearance -> Appearance

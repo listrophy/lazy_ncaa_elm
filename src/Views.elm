@@ -159,6 +159,7 @@ renderChampion renderable =
             [ ( S.Champion, True )
             , ( S.Appearance, True )
             , ( S.CurrentHover, renderable.appearance.hovered )
+            , ( S.AncestorHover, renderable.appearance.ancestorHovered )
             ]
         , E.onMouseEnter <| MouseEntered renderable.round renderable.line
         , E.onMouseLeave <| MouseLeft renderable.round renderable.line
@@ -182,7 +183,7 @@ renderFinalist side renderable =
                 , ( S.FinalLeft, not <| isRight side )
                 , ( S.FinalRight, isRight side )
                 , ( S.CurrentHover, renderable.appearance.hovered )
-                  --, ( S.AncestorHover, isAncestorOfHover model renderable )
+                , ( S.AncestorHover, renderable.appearance.ancestorHovered )
                 , ( S.NotYetChosen, Maybe.Nothing == winner )
                 ]
             ]
