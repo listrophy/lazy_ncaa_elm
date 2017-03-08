@@ -4,7 +4,10 @@ import Dict exposing (Dict)
 
 probabilityForHigherSeed : Int -> Int -> Int -> Maybe (Int, Int)
 probabilityForHigherSeed round highSeed lowSeed =
-  Dict.get (round, highSeed, lowSeed) dict
+  if highSeed == lowSeed then
+    Just (2, 1)
+  else
+    Dict.get (round, highSeed, lowSeed) dict
 
 
 dict : Dict (Int, Int, Int) (Int, Int)

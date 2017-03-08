@@ -33,3 +33,16 @@ setWinner teamMaybe app =
 isUndecided : Appearance -> Bool
 isUndecided app =
     app.winner == Nothing
+
+
+sortAppearances : Appearance -> Appearance -> ( Appearance, Appearance )
+sortAppearances appearance appearance2 =
+    case ( appearance.winner, appearance2.winner ) of
+        ( Just t1, Just t2 ) ->
+            if t1.seed <= t2.seed then
+                ( appearance, appearance2 )
+            else
+                ( appearance2, appearance )
+
+        _ ->
+            ( appearance, appearance2 )

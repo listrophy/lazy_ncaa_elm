@@ -4,11 +4,12 @@ import Array exposing (Array)
 import Array.Extra as Array
 import Messages exposing (Msg(..))
 import Models exposing (Model, Randomizing(..), clearAllWinners)
-import Models.Appearance exposing (Appearance, isUndecided, setAncestorHover, setHover, setWinner)
+import Models.Appearance exposing (Appearance, isUndecided, setAncestorHover, setHover, setWinner, sortAppearances)
 import Models.Bracket exposing (Bracket, Round, appAt, round0line, teamAt)
 import Models.Team exposing (Team)
 import Monocle.Optional as Optional exposing (Optional)
 import Rando exposing (Rando)
+import Models.History exposing (probabilityForHigherSeed)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -127,27 +128,45 @@ randomlyPickWinner roundNum lineNum bracket =
     in
         case ( appA, appB ) of
             ( Just a, Just b ) ->
-                Optional.modify (appAt roundNum lineNum) (determiner a b) bracket
+                Optional.modify (appAt roundNum lineNum) (determiner roundNum a b) bracket
 
             _ ->
                 bracket
 
 
-determiner : Appearance -> Appearance -> Appearance -> Appearance
-determiner a b g =
+andThen2 : (a -> b -> Maybe c) -> Maybe a -> Maybe b -> Maybe c
+andThen2 callback a b =
+    case ( a, b ) of
+        ( Just aa, Just bb ) ->
+            callback aa bb
+
+        _ ->
+            Nothing
+
+
+determiner : Int -> Appearance -> Appearance -> Appearance -> Appearance
+determiner roundNum a b g =
     let
+        ( highSeed, lowSeed ) =
+            sortAppearances a b
+
         winner =
-            Maybe.map2 strategy (a.winner) (b.winner)
+            andThen2 (strategy roundNum) (highSeed.winner) (lowSeed.winner)
     in
         { g | winner = winner }
 
 
-strategy : Team -> Team -> Team
-strategy a b =
-    if a.seed <= b.seed then
-        a
-    else
-        b
+strategy : Int -> Team -> Team -> Maybe Team
+strategy roundNum a b =
+    case probabilityForHigherSeed roundNum a.seed b.seed of
+        Just ( games, won ) ->
+            if won >= games // 2 then
+                Just a
+            else
+                Just b
+
+        Nothing ->
+            Nothing
 
 
 pickWinner : Model -> Int -> Int -> Model
