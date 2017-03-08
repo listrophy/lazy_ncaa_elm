@@ -109,16 +109,23 @@ randomlyChooseNextGame model =
         nextUnchosenGame =
             Array.detectIndex2d isUndecided model.bracket
     in
-        case nextUnchosenGame of
-            Nothing ->
+        case ( nextUnchosenGame, model.randomizing ) of
+            ( Just ( roundNum, lineNum ), Randomizing rando ) ->
+                let
+                    ( rand, nextSeed ) =
+                        Rando.step rando
+                in
+                    { model
+                        | bracket = randomlyPickWinner rand roundNum lineNum model.bracket
+                        , randomizing = Randomizing nextSeed
+                    }
+
+            _ ->
                 { model | randomizing = Halted }
 
-            Just ( roundNum, lineNum ) ->
-                { model | bracket = randomlyPickWinner roundNum lineNum model.bracket }
 
-
-randomlyPickWinner : Int -> Int -> Bracket -> Bracket
-randomlyPickWinner roundNum lineNum bracket =
+randomlyPickWinner : Float -> Int -> Int -> Bracket -> Bracket
+randomlyPickWinner rand roundNum lineNum bracket =
     let
         appA =
             (appAt (roundNum - 1) (lineNum * 2)).getOption bracket
@@ -128,7 +135,7 @@ randomlyPickWinner roundNum lineNum bracket =
     in
         case ( appA, appB ) of
             ( Just a, Just b ) ->
-                Optional.modify (appAt roundNum lineNum) (determiner roundNum a b) bracket
+                Optional.modify (appAt roundNum lineNum) (determiner rand roundNum a b) bracket
 
             _ ->
                 bracket
@@ -144,29 +151,30 @@ andThen2 callback a b =
             Nothing
 
 
-determiner : Int -> Appearance -> Appearance -> Appearance -> Appearance
-determiner roundNum a b g =
+determiner : Float -> Int -> Appearance -> Appearance -> Appearance -> Appearance
+determiner rand roundNum a b =
     let
         ( highSeed, lowSeed ) =
             sortAppearances a b
 
         winner =
-            andThen2 (strategy roundNum) (highSeed.winner) (lowSeed.winner)
+            andThen2 (strategy rand roundNum) (highSeed.winner) (lowSeed.winner)
     in
-        { g | winner = winner }
+        setWinner winner
 
 
-strategy : Int -> Team -> Team -> Maybe Team
-strategy roundNum a b =
+strategy : Float -> Int -> Team -> Team -> Maybe Team
+strategy rand roundNum a b =
     case probabilityForHigherSeed roundNum a.seed b.seed of
         Just ( games, won ) ->
-            if won >= games // 2 then
+            if (toFloat won) / (toFloat games) > rand then
                 Just a
             else
                 Just b
 
+        -- TODO: Start over, since we've never seen it
         Nothing ->
-            Nothing
+            Just a
 
 
 pickWinner : Model -> Int -> Int -> Model
