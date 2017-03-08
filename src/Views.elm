@@ -48,7 +48,13 @@ view model =
 footer : Model -> Html Msg
 footer model =
     Html.footer []
-        [ text "© 2017 Bendyworks, Inc. Code available on "
+        [ text "© 2017 Bendyworks, Inc. Written in "
+        , a
+            [ A.href "http://www.elm-lang.org"
+            , A.target "_blank"
+            ]
+            [ text "Elm" ]
+        , text ". Code available on "
         , a
             [ A.href "https://github.com/listrophy/lazy_ncaa_elm"
             , A.target "_blank"
