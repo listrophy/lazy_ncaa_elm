@@ -2,16 +2,23 @@ module Rando exposing (Rando, init, step)
 
 import Random exposing (Seed)
 
-type alias Rando = Seed
 
-init : Int -> Rando
-init seed =
-  Random.initialSeed seed
+type alias Rando =
+    Seed
 
-step : Rando -> (Float, Rando)
-step rando =
-  stepper rando
 
-stepper : Seed -> (Float, Seed)
-stepper =
-  Random.step (Random.float 0 1)
+init : (Rando -> msg) -> Cmd msg
+init msg =
+    Random.int Random.minInt Random.maxInt
+        |> Random.map Random.initialSeed
+        |> Random.generate msg
+
+
+step : Seed -> ( Float, Rando )
+step =
+    Random.step generator
+
+
+generator : Random.Generator Float
+generator =
+    Random.float 0.0 1.0
