@@ -36,7 +36,14 @@ model =
 
 clearAllWinners : Bracket -> Bracket
 clearAllWinners =
-    Array.map <| Array.map (setWinner Nothing)
+    let
+        ignoreRound0 f index =
+            if index == 0 then
+                identity
+            else
+                f
+    in
+        Array.indexedMap <| ignoreRound0 (Array.map (setWinner Nothing))
 
 
 teamArray : Array Round
