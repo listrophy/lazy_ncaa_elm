@@ -6,12 +6,11 @@
     "elm-live": "^2.7.4"
   },
   "scripts": {
-    "build": "mkdir -p dist && elm-css src/Stylesheets.elm && elm-make src/Main.elm --output=index.js",
+    "build": "elm-css src/Stylesheets.elm && elm-make src/Main.elm --output=index.js",
     "deploy": "gh-pages-deploy",
     "clean-source": "rimraf elm-stuff src tests *.sh"
   },
   "gh-pages-deploy": {
-    "staticpath": "dist",
     "cname": "lazybracket.com",
     "prep": [
       "build"
