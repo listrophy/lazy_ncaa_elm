@@ -274,7 +274,10 @@ randomizeButton : Html Msg
 randomizeButton =
     li
         [ class [ S.Randomizer ] ]
-        [ Html.div [ E.onClick ClickRandomize ] [ text "Randomize" ] ]
+        [ Html.div [ E.onClick ClickRandomize ] [ text "Randomize" ]
+        , Html.br [] []
+        , Html.div [ E.onClick ClearBracket ] [ text "Clear Bracket" ]
+        ]
 
 
 nbsp : String

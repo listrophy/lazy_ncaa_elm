@@ -6,10 +6,10 @@ import Messages exposing (Msg(..))
 import Models exposing (Model, Randomizing(..), clearAllWinners)
 import Models.Appearance exposing (Appearance, isUndecided, setAncestorHover, setHover, setWinner, sortAppearances)
 import Models.Bracket exposing (Bracket, Round, appAt, round0line, teamAt)
+import Models.History exposing (probabilityForHigherSeed)
 import Models.Team exposing (Team)
 import Monocle.Optional as Optional exposing (Optional)
 import Rando exposing (Rando)
-import Models.History exposing (probabilityForHigherSeed)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -17,6 +17,9 @@ update msg ({ randomizing, bracket } as model) =
     case msg of
         ClickRandomize ->
             model ! [ Rando.init StartRandomizing ]
+
+        ClearBracket ->
+            { model | bracket = clearAllWinners bracket } ! []
 
         StartRandomizing seed ->
             startRandomizing seed model ! []
@@ -98,8 +101,7 @@ doSetAncestorHover roundNum lineNum teamName bool bracket =
 startRandomizing : Rando -> Model -> Model
 startRandomizing rando model =
     { model
-        | bracket = clearAllWinners model.bracket
-        , randomizing = Randomizing rando
+        | randomizing = Randomizing rando
     }
 
 
