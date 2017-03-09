@@ -6,9 +6,9 @@
     "elm-live": "^2.7.4"
   },
   "scripts": {
-    "build": "mkdir dist && elm-css src/Stylesheets.elm && elm-make src/Main.elm --output=index.js",
+    "build": "mkdir -p dist && elm-css src/Stylesheets.elm && elm-make src/Main.elm --output=index.js",
     "deploy": "gh-pages-deploy",
-    "clean-source": "rimraf elm-stuff src tests *.sh"
+    "clean-source": "rm -rf elm-stuff src tests *.sh"
   },
   "gh-pages-deploy": {
     "staticpath": "dist",
