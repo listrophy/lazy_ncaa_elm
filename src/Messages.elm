@@ -12,3 +12,4 @@ type Msg
     | ClearBracket
     | StartRandomizing Random.Seed
     | RandomlyChooseNextGame Time.Time
+    | DismissModal

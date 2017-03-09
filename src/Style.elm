@@ -1,7 +1,7 @@
 module Style exposing (..)
 
 import Css exposing (..)
-import Css.Elements exposing (body, div, li, main_, span, footer)
+import Css.Elements exposing (body, div, footer, h1, li, main_, span, p)
 import Css.Namespace exposing (namespace)
 
 
@@ -25,10 +25,12 @@ type CssClasses
     | Randomizer
     | CurrentHover
     | AncestorHover
+    | CloseButton
 
 
 type CssIds
     = Tournament
+    | Modal
 
 
 fontSize_ : Px
@@ -52,6 +54,7 @@ css =
             , hovering
             , randomize
             , footer_
+            , modal
             ]
 
 
@@ -300,6 +303,43 @@ footer_ =
     ]
 
 
+modal : List Snippet
+modal =
+    [ id Modal
+        [ position absolute
+        , top zero
+        , left zero
+        , right zero
+        , bottom zero
+        , displayFlex
+        , justifyContent center
+        , alignItems center
+        , backgroundColor <| rgba 255 255 255 0.7
+        , children
+            [ div
+                [ width <| px 300
+                  -- , height <| px 200
+                , backgroundColor <| hex "fff"
+                , borderRadius radius
+                , padding <| px 8
+                , boxShadow5 zero zero (px 10) (px 5) (hex "bbb")
+                , descendants
+                    [ class CloseButton
+                        [ myButton
+                        ]
+                    , h1
+                        [ textAlign center ]
+                    , p
+                        [ fontSize <| pct 90
+                        , marginBottom <| em 2
+                        ]
+                    ]
+                ]
+            ]
+        ]
+    ]
+
+
 centerize : Mixin
 centerize =
     mixin
@@ -430,37 +470,44 @@ almostWhite =
 -- button
 
 
+myButton : Mixin
+myButton =
+    mixin
+        [ padding2 (px 12) (px 12)
+        , cursor pointer
+        , property "user-select" "none"
+        , property "transition" "all 60ms ease-in-out"
+        , textAlign center
+        , whiteSpace noWrap
+        , important <| textDecoration none
+        , color <| almostWhite
+        , backgroundColor <| grayB
+        , border2 zero none
+        , borderRadius <| px 4
+        , fontWeight <| int 700
+        , lineHeight <| num 1.3
+        , property "appearance" "none"
+        , hover
+            [ property "transition" "all 60ms ease"
+            , opacity <| num 0.85
+            ]
+        , active
+            [ property "transition" "all 60ms ease"
+            , opacity <| num 0.75
+            ]
+        , focus
+            [ outline3 (px 1) dotted (hex "959595")
+            , outlineOffset <| px -4
+            ]
+        ]
+
+
 randomize : List Snippet
 randomize =
     [ class Randomizer
         [ children
             [ div
-                [ padding2 (px 12) (px 12)
-                , cursor pointer
-                , property "user-select" "none"
-                , property "transition" "all 60ms ease-in-out"
-                , textAlign center
-                , whiteSpace noWrap
-                , important <| textDecoration none
-                , color <| almostWhite
-                , backgroundColor <| grayB
-                , border2 zero none
-                , borderRadius <| px 4
-                , fontWeight <| int 700
-                , lineHeight <| num 1.3
-                , property "appearance" "none"
-                , hover
-                    [ property "transition" "all 60ms ease"
-                    , opacity <| num 0.85
-                    ]
-                , active
-                    [ property "transition" "all 60ms ease"
-                    , opacity <| num 0.75
-                    ]
-                , focus
-                    [ outline3 (px 1) dotted (hex "959595")
-                    , outlineOffset <| px -4
-                    ]
+                [ myButton
                 ]
             ]
         ]

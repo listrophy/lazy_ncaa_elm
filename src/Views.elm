@@ -1,7 +1,7 @@
 module Views exposing (..)
 
 import Array exposing (Array)
-import Html exposing (Html, a, li, span, text)
+import Html exposing (Html, a, div, h1, li, p, span, text)
 import Html.Attributes as A
 import Html.CssHelpers
 import Html.Events as E
@@ -11,7 +11,7 @@ import Messages exposing (Msg(..))
 import Models exposing (Model)
 import Models.Appearance exposing (Appearance)
 import Models.Bracket exposing (..)
-import Style as S
+import Style as S exposing (CssClasses(CloseButton))
 
 
 { id, class, classList } =
@@ -38,11 +38,16 @@ type alias Renderable =
 view : Model -> Html Msg
 view model =
     Html.div []
-        [ Html.main_
+        ([ Html.main_
             [ id S.Tournament ]
             (tourney model)
-        , footer model
-        ]
+         , footer model
+         ]
+            ++ if model.showModal then
+                modal
+               else
+                []
+        )
 
 
 footer : Model -> Html Msg
@@ -318,3 +323,15 @@ isRight side =
 
         Right ->
             True
+
+
+modal : List (Html Msg)
+modal =
+    [ div [ id S.Modal ]
+        [ div []
+            [ h1 [] [ text "Hold on!" ]
+            , p [] [ text "The data from Selection Sunday (March 12, 2017) loaded yet. Until then, feel free to play around with the new functionality!" ]
+            , div [ class [ S.CloseButton ], E.onClick DismissModal ] [ text "Got it!" ]
+            ]
+        ]
+    ]

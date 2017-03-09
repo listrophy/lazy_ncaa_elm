@@ -36,6 +36,9 @@ update msg ({ randomizing, bracket } as model) =
         MouseLeft roundNum lineNum ->
             { model | bracket = setHovers roundNum lineNum False bracket } ! []
 
+        DismissModal ->
+            { model | showModal = False } ! []
+
 
 setHovers : Int -> Int -> Bool -> Bracket -> Bracket
 setHovers roundNum lineNum bool bracket =

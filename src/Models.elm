@@ -17,6 +17,7 @@ type alias Model =
     { randomizing : Randomizing
     , bracket : Bracket
     , hovered : Maybe ( Int, Int )
+    , showModal : Bool
     }
 
 
@@ -31,6 +32,7 @@ model =
     { randomizing = Halted
     , bracket = teamArray
     , hovered = Nothing
+    , showModal = True
     }
 
 
