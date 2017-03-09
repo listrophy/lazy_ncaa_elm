@@ -8,7 +8,7 @@
   "scripts": {
     "build": "elm-css src/Stylesheets.elm && elm-make --warn src/Main.elm --output=index.js",
     "deploy": "gh-pages-deploy",
-    "clean-source": "rimraf elm-stuff src tests *.sh"
+    "clean-source": "rimraf src tests *.sh"
   },
   "gh-pages-deploy": {
     "cname": "lazybracket.com",
