@@ -19,6 +19,6 @@
     "post": [
       "clean-source"
     ],
-    "noprompt": false
+    "noprompt": true
   }
 }
