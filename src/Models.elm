@@ -2,6 +2,7 @@ module Models
     exposing
         ( Model
         , Randomizing(..)
+        , ModalType(..)
         , model
         , clearAllWinners
         )
@@ -17,7 +18,7 @@ type alias Model =
     { randomizing : Randomizing
     , bracket : Bracket
     , hovered : Maybe ( Int, Int )
-    , showModal : Bool
+    , showModal : Maybe ModalType
     }
 
 
@@ -27,12 +28,16 @@ type Randomizing
     | Randomizing Rando
 
 
+type ModalType
+    = WhatsThis
+
+
 model : Model
 model =
     { randomizing = Halted
     , bracket = teamArray
     , hovered = Nothing
-    , showModal = False
+    , showModal = Nothing
     }
 
 

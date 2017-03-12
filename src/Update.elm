@@ -37,7 +37,10 @@ update msg ({ randomizing, bracket } as model) =
             { model | bracket = setHovers roundNum lineNum False bracket } ! []
 
         DismissModal ->
-            { model | showModal = False } ! []
+            { model | showModal = Nothing } ! []
+
+        ShowModal x ->
+            { model | showModal = Just x } ! []
 
 
 setHovers : Int -> Int -> Bool -> Bracket -> Bracket

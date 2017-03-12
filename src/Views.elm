@@ -4,11 +4,11 @@ import Array exposing (Array)
 import Html exposing (Html, a, div, h1, li, p, span, text)
 import Html.Attributes as A
 import Html.CssHelpers
-import Html.Events as E
+import Html.Events as E exposing (onClick)
 import Html.Lazy
 import List.Extra as List exposing (elemIndex)
 import Messages exposing (Msg(..))
-import Models exposing (Model)
+import Models exposing (ModalType, ModalType(..), Model)
 import Models.Appearance exposing (Appearance)
 import Models.Bracket exposing (..)
 import Style as S exposing (CssClasses(CloseButton))
@@ -43,17 +43,27 @@ view model =
             (tourney model)
          , footer model
          ]
-            ++ if model.showModal then
-                modal
-               else
-                []
+            ++ (modalView model)
         )
+
+
+modalView : Model -> List (Html Msg)
+modalView model =
+    case model.showModal of
+        Nothing ->
+            []
+
+        Just x ->
+            modal x
 
 
 footer : Model -> Html Msg
 footer model =
     Html.footer []
-        [ text "© 2017 Bendyworks, Inc. Written in "
+        [ a
+            [ onClick <| ShowModal WhatsThis, A.href "#" ]
+            [ text "What's This?" ]
+        , text " © 2017 Bendyworks, Inc. Written in "
         , a
             [ A.href "http://www.elm-lang.org"
             , A.target "_blank"
@@ -325,13 +335,20 @@ isRight side =
             True
 
 
-modal : List (Html Msg)
-modal =
-    [ div [ id S.Modal ]
-        [ div []
-            [ h1 [] [ text "Hold on!" ]
-            , p [] [ text "The data from Selection Sunday (March 12, 2017) loaded yet. Until then, feel free to play around with the new functionality!" ]
-            , div [ class [ S.CloseButton ], E.onClick DismissModal ] [ text "Got it!" ]
+modal : ModalType -> List (Html Msg)
+modal modalType =
+    let
+        h1text =
+            "What's This?"
+
+        p_text =
+            "We generate a bracket based on historical matchups between seeds. That is, if seed A beats seed B 56% of the time, we'll choose seed A with 56% probability. We'll do that for all 63 matchups to create a customized bracket just for you! Don't like it? You can play around with the winners and even preselect winners prior to regenerating!"
+    in
+        [ div [ id S.Modal ]
+            [ div []
+                [ h1 [] [ text h1text ]
+                , p [] [ text p_text ]
+                , div [ class [ S.CloseButton ], E.onClick DismissModal ] [ text "Got it!" ]
+                ]
             ]
         ]
-    ]

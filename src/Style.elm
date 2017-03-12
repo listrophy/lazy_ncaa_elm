@@ -299,6 +299,7 @@ footer_ =
     [ footer
         [ textAlign center
         , fontSize <| pct 80
+        , padding2 (px 18) zero
         ]
     ]
 

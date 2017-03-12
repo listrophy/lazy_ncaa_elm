@@ -2,6 +2,7 @@ module Messages exposing (Msg(..))
 
 import Time
 import Random
+import Models
 
 
 type Msg
@@ -13,3 +14,4 @@ type Msg
     | StartRandomizing Random.Seed
     | RandomlyChooseNextGame Time.Time
     | DismissModal
+    | ShowModal Models.ModalType
