@@ -63,7 +63,11 @@ footer model =
         [ a
             [ onClick <| ShowModal WhatsThis, A.href "#" ]
             [ text "What's This?" ]
-        , text " © 2017 Bendyworks, Inc. Written in "
+        , text " © 2017 "
+        , a
+            [ A.href "http://bendyworks.com" ]
+            [ text "Bendyworks, Inc." ]
+        , text " Written in "
         , a
             [ A.href "http://www.elm-lang.org"
             , A.target "_blank"
