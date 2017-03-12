@@ -32,7 +32,7 @@ model =
     { randomizing = Halted
     , bracket = teamArray
     , hovered = Nothing
-    , showModal = True
+    , showModal = False
     }
 
 
@@ -52,70 +52,70 @@ teamArray : Array Round
 teamArray =
     let
         firstRound =
-            [ Team "Kansas" 1 1
-            , Team "Austin Peay" 1 16
-            , Team "Colorado" 1 8
-            , Team "Connecticut" 1 9
-            , Team "Maryland" 1 5
-            , Team "S. Dakota St." 1 12
-            , Team "California" 1 4
-            , Team "Hawaii" 1 13
-            , Team "Arizona" 1 6
-            , Team "Witchita State" 1 11
-            , Team "Miami (Fla)" 1 3
-            , Team "Buffalo" 1 14
-            , Team "Iowa" 1 7
-            , Team "Temple" 1 10
-            , Team "Villanova" 1 2
-            , Team "UNC Asheville" 1 15
-            , Team "Oregon" 4 1
-            , Team "Holy Cross" 4 16
-            , Team "Saint Joseph's" 4 8
-            , Team "Cincinnati" 4 9
-            , Team "Baylor" 4 5
-            , Team "Yale" 4 12
-            , Team "Duke" 4 4
-            , Team "UNCW" 4 13
-            , Team "Texas" 4 6
-            , Team "UNI" 4 11
-            , Team "Texas A&M" 4 3
-            , Team "Green Bay" 4 14
-            , Team "Oregon State" 4 7
+            [ Team "Villanova" 1 1
+            , Team "MSM/New Orl" 1 16
+            , Team "Wisconsin" 1 8
+            , Team "Va. Tech" 1 9
+            , Team "Virginia" 1 5
+            , Team "UNC Wilm" 1 12
+            , Team "Florida" 1 4
+            , Team "E Tenn St" 1 13
+            , Team "SMU" 1 6
+            , Team "Prov/USC" 1 11
+            , Team "Baylor" 1 3
+            , Team "N. Mexico St." 1 14
+            , Team "S. Carolina" 1 7
+            , Team "Marquette" 1 10
+            , Team "Duke" 1 2
+            , Team "Troy" 1 15
+            , Team "Kansas" 2 1
+            , Team "NCC/UC Dav" 2 16
+            , Team "Miami (FL)" 2 8
+            , Team "Michigan St" 2 9
+            , Team "Iowa St" 2 5
+            , Team "Nevada" 2 12
+            , Team "Purdue" 2 4
+            , Team "Vermont" 2 13
+            , Team "Creighton" 2 6
+            , Team "Rhode Isl." 2 11
+            , Team "Oregon" 2 3
+            , Team "Iona" 2 14
+            , Team "Michigan" 2 7
+            , Team "Okla. St" 2 10
+            , Team "Louisville" 2 2
+            , Team "Jax'ville St" 2 15
+            , Team "Gonzaga" 4 1
+            , Team "S Dak St." 4 16
+            , Team "Northwestern" 4 8
+            , Team "Vanderbilt" 4 9
+            , Team "Notre Dame" 4 5
+            , Team "Princeton" 4 12
+            , Team "W Virginia" 4 4
+            , Team "Bucknell" 4 13
+            , Team "Maryland" 4 6
+            , Team "Xavier" 4 11
+            , Team "Florida St" 4 3
+            , Team "FGCU" 4 14
+            , Team "St Mary's" 4 7
             , Team "VCU" 4 10
-            , Team "Oklahoma" 4 2
-            , Team "CSU Bakers." 4 15
-            , Team "North Carolina" 2 1
-            , Team "FGCU" 2 16
-            , Team "USC" 2 8
-            , Team "Providence" 2 9
-            , Team "Indiana" 2 5
-            , Team "Chattanooga" 2 12
-            , Team "Kentucky" 2 4
-            , Team "Stony Brook" 2 13
-            , Team "Notre Dame" 2 6
-            , Team "Michigan" 2 11
-            , Team "West Virginia" 2 3
-            , Team "S.F. Austin" 2 14
-            , Team "Wisconsin" 2 7
-            , Team "Pittsburgh" 2 10
-            , Team "Xavier" 2 2
-            , Team "Weber State" 2 15
-            , Team "Virginia" 3 1
-            , Team "Hampton" 3 16
-            , Team "Texas Tech" 3 8
-            , Team "Butler" 3 9
-            , Team "Purdue" 3 5
-            , Team "Little Rock" 3 12
-            , Team "Iowa State" 3 4
-            , Team "Iona" 3 13
-            , Team "Seton Hall" 3 6
-            , Team "Gonzaga" 3 11
-            , Team "Utah" 3 3
-            , Team "Fresno State" 3 14
+            , Team "Arizona" 4 2
+            , Team "N Dakota" 4 15
+            , Team "N Carolina" 3 1
+            , Team "Texas Southern" 3 16
+            , Team "Arkansas" 3 8
+            , Team "Seton Hall" 3 9
+            , Team "Minnesota" 3 5
+            , Team "Middle Tenn." 3 12
+            , Team "Butler" 3 4
+            , Team "Winthrop" 3 13
+            , Team "Cincinnati" 3 6
+            , Team "Kan St/Wake F" 3 11
+            , Team "UCLA" 3 3
+            , Team "Kent St." 3 14
             , Team "Dayton" 3 7
-            , Team "Syracuse" 3 10
-            , Team "Michigan State" 3 2
-            , Team "Middle Tenn." 3 15
+            , Team "Wichita St" 3 10
+            , Team "Kentucky" 3 2
+            , Team "N Kentucky" 3 15
             ]
                 |> List.map (\x -> Appearance (Just x) False False)
 
