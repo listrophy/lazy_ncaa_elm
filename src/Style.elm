@@ -290,6 +290,12 @@ finalFour =
         , displayFlex
         , flexDirection column
         , justifyContent center
+        , descendants
+            [ span
+                [ paddingTop <| px 16
+                , display block
+                ]
+            ]
         ]
     ]
 
