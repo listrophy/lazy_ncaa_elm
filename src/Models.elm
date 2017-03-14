@@ -73,22 +73,6 @@ teamArray =
             , Team "Marquette" 1 10
             , Team "Duke" 1 2
             , Team "Troy" 1 15
-            , Team "Kansas" 2 1
-            , Team "NCC/UC Dav" 2 16
-            , Team "Miami (FL)" 2 8
-            , Team "Michigan St" 2 9
-            , Team "Iowa St" 2 5
-            , Team "Nevada" 2 12
-            , Team "Purdue" 2 4
-            , Team "Vermont" 2 13
-            , Team "Creighton" 2 6
-            , Team "Rhode Isl." 2 11
-            , Team "Oregon" 2 3
-            , Team "Iona" 2 14
-            , Team "Michigan" 2 7
-            , Team "Okla. St" 2 10
-            , Team "Louisville" 2 2
-            , Team "Jax'ville St" 2 15
             , Team "Gonzaga" 4 1
             , Team "S Dak St." 4 16
             , Team "Northwestern" 4 8
@@ -105,6 +89,22 @@ teamArray =
             , Team "VCU" 4 10
             , Team "Arizona" 4 2
             , Team "N Dakota" 4 15
+            , Team "Kansas" 2 1
+            , Team "NCC/UC Dav" 2 16
+            , Team "Miami (FL)" 2 8
+            , Team "Michigan St" 2 9
+            , Team "Iowa St" 2 5
+            , Team "Nevada" 2 12
+            , Team "Purdue" 2 4
+            , Team "Vermont" 2 13
+            , Team "Creighton" 2 6
+            , Team "Rhode Isl." 2 11
+            , Team "Oregon" 2 3
+            , Team "Iona" 2 14
+            , Team "Michigan" 2 7
+            , Team "Okla. St" 2 10
+            , Team "Louisville" 2 2
+            , Team "Jax'ville St" 2 15
             , Team "N Carolina" 3 1
             , Team "Texas Southern" 3 16
             , Team "Arkansas" 3 8
