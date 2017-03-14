@@ -13,6 +13,7 @@ type CssClasses
     | Spacer
     | Winner
     | GameSpacer
+    | WithRegionName
     | RightHalf
     | Team
     | Seed
@@ -232,6 +233,20 @@ spacers =
         [ flexGrow <| num 1
         , minHeight <| px 2
         , borderRight3 (px 1) solid connectorColor
+        , withClass WithRegionName
+            [ displayFlex
+            , flexDirection column
+            , justifyContent center
+            , padding2 zero (px 4)
+            ]
+        ]
+    , class (RoundN 3)
+        [ descendants
+            [ class GameSpacer
+                [ fontSize <| px 24
+                , lineHeight <| px 14
+                ]
+            ]
         ]
     , class RightHalf
         [ descendants

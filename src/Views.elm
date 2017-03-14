@@ -138,7 +138,7 @@ renderGenericColumn roundNum side renderables =
         top :: bottom :: tl ->
             [ spacer
             , renderAppearance roundNum side top
-            , gameSpacer
+            , gameSpacer roundNum side <| List.length tl
             , renderAppearance roundNum side bottom
             ]
                 ++ renderGenericColumn roundNum side tl
@@ -279,9 +279,30 @@ renderRoundNAppearance side renderable =
         [ appearanceText renderable.appearance ]
 
 
-gameSpacer : Html Msg
-gameSpacer =
-    li [ class [ S.GameSpacer ] ] [ text nbsp ]
+gameSpacer : Int -> Side -> Int -> Html Msg
+gameSpacer roundNum side tlLength =
+    if roundNum == 3 then
+        let
+            regionName =
+                case ( side, tlLength ) of
+                    ( Left, 2 ) ->
+                        "East"
+
+                    ( Left, 0 ) ->
+                        "West"
+
+                    ( Right, 2 ) ->
+                        "Midwest"
+
+                    ( Right, 0 ) ->
+                        "South"
+
+                    _ ->
+                        nbsp
+        in
+            li [ class [ S.GameSpacer, S.WithRegionName ] ] [ span [] [ text regionName ] ]
+    else
+        li [ class [ S.GameSpacer ] ] [ text nbsp ]
 
 
 spacer : Html Msg
