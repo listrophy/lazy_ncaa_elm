@@ -3,7 +3,8 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "elm-css": "^0.6.1",
-    "elm-live": "^2.7.5"
+    "elm-live": "^2.7.5",
+    "gh-pages-deploy": "0.4.2"
   },
   "scripts": {
     "build": "elm-css src/Stylesheets.elm && elm-make --warn src/Main.elm --output=index.js",
