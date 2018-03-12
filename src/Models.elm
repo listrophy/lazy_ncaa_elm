@@ -57,70 +57,70 @@ teamArray : Array Round
 teamArray =
     let
         firstRound =
-            [ Team "Villanova" 1 1
-            , Team "MSM/New Orl" 1 16
-            , Team "Wisconsin" 1 8
-            , Team "Va. Tech" 1 9
-            , Team "Virginia" 1 5
-            , Team "UNC Wilm" 1 12
-            , Team "Florida" 1 4
-            , Team "E Tenn St" 1 13
-            , Team "SMU" 1 6
-            , Team "Prov/USC" 1 11
-            , Team "Baylor" 1 3
-            , Team "N. Mexico St." 1 14
-            , Team "S. Carolina" 1 7
-            , Team "Marquette" 1 10
-            , Team "Duke" 1 2
-            , Team "Troy" 1 15
-            , Team "Gonzaga" 4 1
-            , Team "S Dak St." 4 16
-            , Team "Northwestern" 4 8
-            , Team "Vanderbilt" 4 9
-            , Team "Notre Dame" 4 5
-            , Team "Princeton" 4 12
-            , Team "W Virginia" 4 4
-            , Team "Bucknell" 4 13
-            , Team "Maryland" 4 6
-            , Team "Xavier" 4 11
-            , Team "Florida St" 4 3
-            , Team "FGCU" 4 14
-            , Team "St Mary's" 4 7
-            , Team "VCU" 4 10
-            , Team "Arizona" 4 2
-            , Team "N Dakota" 4 15
-            , Team "Kansas" 2 1
-            , Team "NCC/UC Dav" 2 16
-            , Team "Miami (FL)" 2 8
-            , Team "Michigan St" 2 9
-            , Team "Iowa St" 2 5
-            , Team "Nevada" 2 12
-            , Team "Purdue" 2 4
-            , Team "Vermont" 2 13
-            , Team "Creighton" 2 6
-            , Team "Rhode Isl." 2 11
-            , Team "Oregon" 2 3
-            , Team "Iona" 2 14
-            , Team "Michigan" 2 7
-            , Team "Okla. St" 2 10
-            , Team "Louisville" 2 2
-            , Team "Jax'ville St" 2 15
-            , Team "N Carolina" 3 1
-            , Team "Texas Southern" 3 16
-            , Team "Arkansas" 3 8
-            , Team "Seton Hall" 3 9
-            , Team "Minnesota" 3 5
-            , Team "Middle Tenn." 3 12
-            , Team "Butler" 3 4
-            , Team "Winthrop" 3 13
-            , Team "Cincinnati" 3 6
-            , Team "Kan St/Wake F" 3 11
-            , Team "UCLA" 3 3
-            , Team "Kent St." 3 14
-            , Team "Dayton" 3 7
-            , Team "Wichita St" 3 10
-            , Team "Kentucky" 3 2
-            , Team "N Kentucky" 3 15
+            [ Team "Virginia" 1 1
+            , Team "UMBC" 1 16
+            , Team "Creighton" 1 8
+            , Team "Kansas St" 1 9
+            , Team "Kentucky" 1 5
+            , Team "Davidson" 1 12
+            , Team "Arizona" 1 4
+            , Team "Buffalo" 1 13
+            , Team "Miami (FL)" 1 6
+            , Team "Loyola-Chi" 1 11
+            , Team "Tennessee" 1 3
+            , Team "Wright St" 1 14
+            , Team "Nevada" 1 7
+            , Team "Texas" 1 10
+            , Team "Cincinnati" 1 2
+            , Team "Georgia St" 1 15
+            , Team "Xavier" 4 1
+            , Team "NCCU/TXSO" 4 16
+            , Team "Missouri" 4 8
+            , Team "Florida St" 4 9
+            , Team "Ohio St" 4 5
+            , Team "S Dakota St" 4 12
+            , Team "Gonzaga" 4 4
+            , Team "UNC-Green" 4 13
+            , Team "Houston" 4 6
+            , Team "San Diego St" 4 11
+            , Team "Michigan" 4 3
+            , Team "Montana" 4 14
+            , Team "Texas A&M" 4 7
+            , Team "Providence" 4 10
+            , Team "N Carolina" 4 2
+            , Team "Lipscomb" 4 15
+            , Team "Villanova" 2 1
+            , Team "LIU/RAD" 2 16
+            , Team "Va Tech" 2 8
+            , Team "Alabama" 2 9
+            , Team "W Virginia" 2 5
+            , Team "Murray St" 2 12
+            , Team "Wichita St" 2 4
+            , Team "Marshall" 2 13
+            , Team "Florida" 2 6
+            , Team "STBON/UCLA" 2 11
+            , Team "Texas Tech" 2 3
+            , Team "SF Austin" 2 14
+            , Team "Arkansas" 2 7
+            , Team "Butler" 2 10
+            , Team "Purdue" 2 2
+            , Team "CS Fullerton" 2 15
+            , Team "Kansas" 3 1
+            , Team "Penn" 3 16
+            , Team "Seton Hall" 3 8
+            , Team "NC State" 3 9
+            , Team "Clemson" 3 5
+            , Team "New Mex St" 3 12
+            , Team "Auburn" 3 4
+            , Team "Charleston" 3 13
+            , Team "TCU" 3 6
+            , Team "ASU/SYR" 3 11
+            , Team "Michigan St" 3 3
+            , Team "Bucknell" 3 14
+            , Team "Rhode Isl" 3 7
+            , Team "Oklahoma" 3 10
+            , Team "Duke" 3 2
+            , Team "Iona" 3 15
             ]
                 |> List.map (\x -> Appearance (Just x) False False)
 
