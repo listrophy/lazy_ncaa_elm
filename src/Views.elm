@@ -286,16 +286,16 @@ gameSpacer roundNum side tlLength =
             regionName =
                 case ( side, tlLength ) of
                     ( Left, 2 ) ->
-                        "East"
+                        "South"
 
                     ( Left, 0 ) ->
                         "West"
 
                     ( Right, 2 ) ->
-                        "Midwest"
+                        "East"
 
                     ( Right, 0 ) ->
-                        "South"
+                        "Midwest"
 
                     _ ->
                         nbsp
