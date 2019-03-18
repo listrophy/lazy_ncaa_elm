@@ -7,7 +7,7 @@
     "gh-pages-deploy": "0.4.2"
   },
   "scripts": {
-    "build": "elm-css src/Stylesheets.elm && elm-make --warn src/Main.elm --output=index.js",
+    "build": "elm-make --warn src/Main.elm --output=index.js",
     "deploy": "gh-pages-deploy",
     "clean-source": "rimraf src tests *.sh"
   },
