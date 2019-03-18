@@ -65,7 +65,7 @@ myFooter model =
         [ a
             [ onClick <| ShowModal WhatsThis, A.href "#" ]
             [ text "What's This?" ]
-        , text " © 2017 "
+        , text " © 2019 "
         , a
             [ A.href "http://bendyworks.com" ]
             [ text "Bendyworks, Inc." ]
