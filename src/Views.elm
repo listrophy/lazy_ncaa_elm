@@ -1,21 +1,17 @@
-module Views exposing (..)
+module Views exposing (Column(..), Renderable, Side(..), appearanceText, clickWinner, columnize, gameSpacer, halve, isRight, isRightColumn, modal, modalView, myFooter, nbsp, randomizeButton, renderAppearance, renderBranding, renderChampion, renderColumn, renderColumn_, renderFinalist, renderGenericColumn, renderRound0Appearance, renderRoundNAppearance, renderablesToColumns, round0Elem, spacer, tourney, view)
 
 import Array exposing (Array)
-import Html exposing (Html, a, div, h1, li, p, span, text)
-import Html.Attributes as A
-import Html.CssHelpers
-import Html.Events as E exposing (onClick)
-import Html.Lazy
+import Css.Global
+import Html.Styled as Html exposing (Html, a, div, footer, h1, li, main_, p, span, styled, text, ul)
+import Html.Styled.Attributes as A exposing (class, classList, id)
+import Html.Styled.Events as E exposing (onClick)
+import Html.Styled.Lazy
 import List.Extra as List exposing (elemIndex)
 import Messages exposing (Msg(..))
-import Models exposing (ModalType, ModalType(..), Model)
+import Models exposing (ModalType(..), Model)
 import Models.Appearance exposing (Appearance)
 import Models.Bracket exposing (..)
-import Style as S exposing (CssClasses(CloseButton))
-
-
-{ id, class, classList } =
-    Html.CssHelpers.withNamespace "lazyNcaa"
+import Style as S exposing (CssClasses(..))
 
 
 type Side
@@ -37,13 +33,17 @@ type alias Renderable =
 
 view : Model -> Html Msg
 view model =
-    Html.div []
-        ([ Html.main_
-            [ id S.Tournament ]
+    styled div
+        []
+        []
+        ([ styled main_
+            []
+            [ id "Tournament" ]
             (tourney model)
-         , footer model
+         , myFooter model
          ]
-            ++ (modalView model)
+            ++ [ Css.Global.global S.css ]
+            ++ modalView model
         )
 
 
@@ -57,9 +57,11 @@ modalView model =
             modal x
 
 
-footer : Model -> Html Msg
-footer model =
-    Html.footer []
+myFooter : Model -> Html Msg
+myFooter model =
+    styled footer
+        []
+        []
         [ a
             [ onClick <| ShowModal WhatsThis, A.href "#" ]
             [ text "What's This?" ]
@@ -86,7 +88,7 @@ tourney : Model -> List (Html Msg)
 tourney model =
     model.bracket
         |> columnize
-        |> List.map (renderColumn)
+        |> List.map renderColumn
 
 
 columnize : Bracket -> List Column
@@ -98,25 +100,27 @@ columnize =
 
 renderColumn : Column -> Html Msg
 renderColumn =
-    Html.Lazy.lazy <| renderColumn_
+    Html.Styled.Lazy.lazy <| renderColumn_
 
 
 renderColumn_ : Column -> Html Msg
 renderColumn_ column =
     case column of
         RoundColumn roundNum side renderables ->
-            Html.ul
+            styled ul
+                []
                 [ classList
-                    [ ( S.Round, True )
-                    , ( S.RightHalf, isRightColumn column )
-                    , ( S.RoundN roundNum, True )
+                    [ ( "Round", True )
+                    , ( "RightHalf", isRightColumn column )
+                    , ( "Round" ++ String.fromInt roundNum, True )
                     ]
                 ]
                 (renderGenericColumn roundNum side renderables)
 
         FinalsColumn ( leftFinalist, rightFinalist, champion ) ->
-            Html.ul
-                [ class [ S.Round, S.Finals ] ]
+            styled ul
+                []
+                [ class "Round", class "Finals" ]
                 [ renderBranding
                 , renderFinalist Left leftFinalist
                 , renderChampion champion
@@ -127,8 +131,9 @@ renderColumn_ column =
 
 renderBranding : Html Msg
 renderBranding =
-    li
-        [ class [ S.Branding ] ]
+    styled li
+        []
+        [ class "Branding" ]
         []
 
 
@@ -167,11 +172,11 @@ renderablesToColumns roundNum list =
                 toColumn =
                     RoundColumn roundNum
             in
-                List.concat
-                    [ [ toColumn Left left ]
-                    , nextRound
-                    , [ toColumn Right right ]
-                    ]
+            List.concat
+                [ [ toColumn Left left ]
+                , nextRound
+                , [ toColumn Right right ]
+                ]
 
         _ ->
             []
@@ -181,10 +186,10 @@ renderChampion : Renderable -> Html Msg
 renderChampion renderable =
     li
         [ classList
-            [ ( S.Champion, True )
-            , ( S.Appearance, True )
-            , ( S.CurrentHover, renderable.appearance.hovered )
-            , ( S.AncestorHover, renderable.appearance.ancestorHovered )
+            [ ( "Champion", True )
+            , ( "Appearance", True )
+            , ( "CurrentHover", renderable.appearance.hovered )
+            , ( "AncestorHover", renderable.appearance.ancestorHovered )
             ]
         , E.onMouseEnter <| MouseEntered renderable.round renderable.line
         , E.onMouseLeave <| MouseLeft renderable.round renderable.line
@@ -198,27 +203,28 @@ renderFinalist side renderable =
         winner =
             renderable.appearance.winner
     in
-        li
-            [ E.onClick <| clickWinner renderable
-            , E.onMouseEnter <| MouseEntered renderable.round renderable.line
-            , E.onMouseLeave <| MouseLeft renderable.round renderable.line
-            , classList
-                [ ( S.Appearance, True )
-                , ( S.Finalist, True )
-                , ( S.FinalLeft, not <| isRight side )
-                , ( S.FinalRight, isRight side )
-                , ( S.CurrentHover, renderable.appearance.hovered )
-                , ( S.AncestorHover, renderable.appearance.ancestorHovered )
-                , ( S.NotYetChosen, Maybe.Nothing == winner )
-                ]
+    li
+        [ E.onClick <| clickWinner renderable
+        , E.onMouseEnter <| MouseEntered renderable.round renderable.line
+        , E.onMouseLeave <| MouseLeft renderable.round renderable.line
+        , classList
+            [ ( "Appearance", True )
+            , ( "Finalist", True )
+            , ( "FinalLeft", not <| isRight side )
+            , ( "FinalRight", isRight side )
+            , ( "CurrentHover", renderable.appearance.hovered )
+            , ( "AncestorHover", renderable.appearance.ancestorHovered )
+            , ( "NotYetChosen", Maybe.Nothing == winner )
             ]
-            [ appearanceText renderable.appearance ]
+        ]
+        [ appearanceText renderable.appearance ]
 
 
 renderAppearance : Int -> Side -> Renderable -> Html Msg
 renderAppearance roundNum side renderable =
     if roundNum == 0 then
         renderRound0Appearance side renderable
+
     else
         renderRoundNAppearance side renderable
 
@@ -230,23 +236,23 @@ renderRound0Appearance side renderable =
             Maybe.withDefault "" <| Maybe.map f x.appearance.winner
 
         teamSpan =
-            span [ class [ S.Seed ] ] [ text <| maybeText (toString << .seed) renderable ]
+            span [ class "Seed" ] [ text <| maybeText (String.fromInt << .seed) renderable ]
 
         seedSpan =
-            span [ class [ S.Team ] ] [ text <| maybeText .name renderable ]
+            span [ class "Team" ] [ text <| maybeText .name renderable ]
     in
-        case side of
-            Left ->
-                round0Elem renderable
-                    [ teamSpan
-                    , seedSpan
-                    ]
+    case side of
+        Left ->
+            round0Elem renderable
+                [ teamSpan
+                , seedSpan
+                ]
 
-            Right ->
-                round0Elem renderable
-                    [ seedSpan
-                    , teamSpan
-                    ]
+        Right ->
+            round0Elem renderable
+                [ seedSpan
+                , teamSpan
+                ]
 
 
 round0Elem : Renderable -> List (Html Msg) -> Html Msg
@@ -256,9 +262,9 @@ round0Elem renderable =
         , E.onMouseEnter <| MouseEntered renderable.round renderable.line
         , E.onMouseLeave <| MouseLeft renderable.round renderable.line
         , classList
-            [ ( S.Appearance, True )
-            , ( S.CurrentHover, renderable.appearance.hovered )
-            , ( S.AncestorHover, renderable.appearance.ancestorHovered )
+            [ ( "Appearance", True )
+            , ( "CurrentHover", renderable.appearance.hovered )
+            , ( "AncestorHover", renderable.appearance.ancestorHovered )
             ]
         ]
 
@@ -267,10 +273,10 @@ renderRoundNAppearance : Side -> Renderable -> Html Msg
 renderRoundNAppearance side renderable =
     li
         [ classList
-            [ ( S.Appearance, True )
-            , ( S.CurrentHover, renderable.appearance.hovered )
-            , ( S.AncestorHover, renderable.appearance.ancestorHovered )
-            , ( S.NotYetChosen, Maybe.Nothing == renderable.appearance.winner )
+            [ ( "Appearance", True )
+            , ( "CurrentHover", renderable.appearance.hovered )
+            , ( "AncestorHover", renderable.appearance.ancestorHovered )
+            , ( "NotYetChosen", Maybe.Nothing == renderable.appearance.winner )
             ]
         , E.onClick <| clickWinner renderable
         , E.onMouseEnter <| MouseEntered renderable.round renderable.line
@@ -300,23 +306,24 @@ gameSpacer roundNum side tlLength =
                     _ ->
                         nbsp
         in
-            li [ class [ S.GameSpacer, S.WithRegionName ] ] [ span [] [ text regionName ] ]
+        li [ class "GameSpacer", class "WithRegionName" ] [ span [] [ text regionName ] ]
+
     else
-        li [ class [ S.GameSpacer ] ] [ text nbsp ]
+        li [ class "GameSpacer" ] [ text nbsp ]
 
 
 spacer : Html Msg
 spacer =
-    li [ class [ S.Spacer ] ] [ text nbsp ]
+    li [ class "Spacer" ] [ text nbsp ]
 
 
 randomizeButton : Html Msg
 randomizeButton =
     li
-        [ class [ S.Randomizer ] ]
-        [ Html.div [ E.onClick ClickRandomize ] [ text "Randomize" ]
-        , Html.span [] []
-        , Html.div [ E.onClick ClearBracket ] [ text "Clear Bracket" ]
+        [ class "Randomizer" ]
+        [ div [ E.onClick ClickRandomize ] [ text "Randomize" ]
+        , span [] []
+        , div [ E.onClick ClearBracket ] [ text "Clear Bracket" ]
         ]
 
 
@@ -337,7 +344,7 @@ clickWinner { round, line } =
 
 halve : List a -> ( List a, List a )
 halve list =
-    List.splitAt ((List.length list) // 2) list
+    List.splitAt (List.length list // 2) list
 
 
 isRightColumn : Column -> Bool
@@ -369,11 +376,11 @@ modal modalType =
         p_text =
             "We generate a bracket based on historical matchups between seeds. That is, if seed A beats seed B 56% of the time, we'll choose seed A with 56% probability. We'll do that for all 63 matchups to create a customized bracket just for you! Don't like it? You can play around with the winners and even preselect winners prior to regenerating!"
     in
-        [ div [ id S.Modal ]
-            [ div []
-                [ h1 [] [ text h1text ]
-                , p [] [ text p_text ]
-                , div [ class [ S.CloseButton ], E.onClick DismissModal ] [ text "Got it!" ]
-                ]
+    [ div [ id "Modal" ]
+        [ div []
+            [ h1 [] [ text h1text ]
+            , p [] [ text p_text ]
+            , div [ class "CloseButton", E.onClick DismissModal ] [ text "Got it!" ]
             ]
         ]
+    ]

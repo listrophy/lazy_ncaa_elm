@@ -1,4 +1,4 @@
-module Array.Extra exposing (..)
+module Array.Extra exposing (detectIndex, detectIndex2d)
 
 import Array exposing (Array)
 
@@ -14,5 +14,5 @@ detectIndex f =
 detectIndex2d : (a -> Bool) -> Array (Array a) -> Maybe ( Int, Int )
 detectIndex2d f =
     Array.toIndexedList
-        >> List.filterMap (\( i, a ) -> detectIndex f a |> Maybe.map ((,) i))
+        >> List.filterMap (\( i, a ) -> detectIndex f a |> Maybe.map (\b -> ( i, b )))
         >> List.head

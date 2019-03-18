@@ -1,8 +1,7 @@
-module Style exposing (..)
+module Style exposing (CssClasses(..), CssIds(..), almostWhite, appearanceBackground, appearanceColor, appearances, borderNNNY, borderNNYN, borderNNYY, borderNYNN, borderNYYN, borderYNNN, borderYNNY, borderYYNN, borderYYYY, borders, bottomColorOfBackground, centerize, connectorColor, css, finalFour, fontSize_, footer_, gray0, grayA, grayB, grayC, hoverBackgroundAncestor, hoverBackgroundCurrent, hoverColorCurrent, hovering, lightGray, modal, myButton, overallPage, overallTournament, px0, radius, randomize, roundColumns, rounding, seeds, spacers)
 
 import Css exposing (..)
-import Css.Elements exposing (body, div, footer, h1, li, main_, span, p)
-import Css.Namespace exposing (namespace)
+import Css.Global exposing (Snippet, body, children, class, descendants, div, footer, h1, id, li, main_, p, span, withClass)
 
 
 type CssClasses
@@ -39,24 +38,23 @@ fontSize_ =
     px 12
 
 
-css : Stylesheet
+css : List Snippet
 css =
-    (stylesheet << namespace "lazyNcaa") <|
-        List.concat
-            [ overallPage
-            , overallTournament
-            , roundColumns
-            , appearances
-            , rounding
-            , borders
-            , spacers
-            , seeds
-            , finalFour
-            , hovering
-            , randomize
-            , footer_
-            , modal
-            ]
+    List.concat
+        [ overallPage
+        , overallTournament
+        , roundColumns
+        , appearances
+        , rounding
+        , borders
+        , spacers
+        , seeds
+        , finalFour
+        , hovering
+        , randomize
+        , footer_
+        , modal
+        ]
 
 
 overallPage : List Snippet
@@ -94,7 +92,7 @@ overallTournament =
         , flexDirection row
         , padding <| px 10
         ]
-    , class RightHalf
+    , class "RightHalf"
         [ textAlign right
         ]
     ]
@@ -102,7 +100,7 @@ overallTournament =
 
 roundColumns : List Snippet
 roundColumns =
-    [ class Round
+    [ class "Round"
         [ displayFlex
         , flexDirection column
         , justifyContent center
@@ -118,10 +116,10 @@ roundColumns =
 
 appearances : List Snippet
 appearances =
-    [ class Round
+    [ class "Round"
         [ fontSize fontSize_
         ]
-    , class Appearance
+    , class "Appearance"
         [ backgroundColor appearanceBackground
         , color appearanceColor
         , lineHeight <| num 1.2
@@ -130,9 +128,9 @@ appearances =
         , overflowX hidden
         , cursor pointer
         , border3 (px 1) solid grayA
-        , withClass NotYetChosen [ cursor default ]
+        , withClass "NotYetChosen" [ cursor default ]
         ]
-    , class Champion
+    , class "Champion"
         [ fontSize <| px 18
         , minHeight <| px 22
         ]
@@ -148,61 +146,61 @@ rounding =
         nthBottom =
             nthOfType "4n"
     in
-        [ class Appearance
-            [ nthTop [ borderNYNN ]
-            , nthBottom [ borderNNYN ]
-            ]
-        , class RightHalf
-            [ descendants
-                [ class Appearance
-                    [ nthTop [ borderYNNN ]
-                    , nthBottom [ borderNNNY ]
-                    ]
-                ]
-            ]
-        , class (RoundN 0)
-            [ descendants
-                [ class Appearance
-                    [ nthTop [ borderYYNN ]
-                    , nthBottom [ borderNNYY ]
-                    ]
+    [ class "Appearance"
+        [ nthTop [ borderNYNN ]
+        , nthBottom [ borderNNYN ]
+        ]
+    , class "RightHalf"
+        [ descendants
+            [ class "Appearance"
+                [ nthTop [ borderYNNN ]
+                , nthBottom [ borderNNNY ]
                 ]
             ]
         ]
+    , class "Round0"
+        [ descendants
+            [ class "Appearance"
+                [ nthTop [ borderYYNN ]
+                , nthBottom [ borderNNYY ]
+                ]
+            ]
+        ]
+    ]
 
 
 borders : List Snippet
 borders =
-    [ class (RoundN 0)
+    [ class "Round0"
         [ descendants
-            [ class Appearance
+            [ class "Appearance"
                 [ borderLeftWidth <| px 1
                 ]
             ]
-        , withClass RightHalf
+        , withClass "RightHalf"
             [ descendants
-                [ class Appearance
+                [ class "Appearance"
                     [ borderRightWidth <| px 1
                     ]
                 ]
             ]
         ]
-    , class Appearance
+    , class "Appearance"
         [ borderLeftWidth px0
         ]
-    , class RightHalf
+    , class "RightHalf"
         [ descendants
-            [ class Appearance
+            [ class "Appearance"
                 [ borderLeftWidth <| px 1
                 , borderRightWidth px0
                 ]
             ]
         ]
-    , class Finals
+    , class "Finals"
         [ children
-            [ class Champion
+            [ class "Champion"
                 [ borderLeftWidth <| px 1 ]
-            , class FinalRight
+            , class "FinalRight"
                 [ borderLeftWidth <| px 1
                 , borderRightWidth px0
                 ]
@@ -223,34 +221,34 @@ px0 =
 
 spacers : List Snippet
 spacers =
-    [ class Spacer
+    [ class "Spacer"
         [ flexGrow <| int 1
         , minHeight <| px 6
-        , firstChild [ flexGrow <| num 0.5 ]
+        , firstOfType [ flexGrow <| num 0.5 ]
         , lastChild [ flexGrow <| num 0.5 ]
         ]
-    , class GameSpacer
+    , class "GameSpacer"
         [ flexGrow <| num 1
         , minHeight <| px 2
         , borderRight3 (px 1) solid connectorColor
-        , withClass WithRegionName
+        , withClass "WithRegionName"
             [ displayFlex
             , flexDirection column
             , justifyContent center
             , padding2 zero (px 4)
             ]
         ]
-    , class (RoundN 3)
+    , class "Round3"
         [ descendants
-            [ class GameSpacer
+            [ class "GameSpacer"
                 [ fontSize <| px 24
                 , lineHeight <| px 14
                 ]
             ]
         ]
-    , class RightHalf
+    , class "RightHalf"
         [ descendants
-            [ class GameSpacer
+            [ class "GameSpacer"
                 [ borderRightWidth <| px 0
                 , borderLeft3 (px 1) solid connectorColor
                 ]
@@ -261,7 +259,7 @@ spacers =
 
 seeds : List Snippet
 seeds =
-    [ class Seed
+    [ class "Seed"
         [ fontSize <| px 9
         , width <| em 1.5
         , lineHeight fontSize_
@@ -272,11 +270,11 @@ seeds =
 
 hovering : List Snippet
 hovering =
-    [ class CurrentHover
+    [ class "CurrentHover"
         [ important <| hoverBackgroundCurrent
         , important <| hoverColorCurrent
         ]
-    , class AncestorHover
+    , class "AncestorHover"
         [ important <| hoverBackgroundAncestor
         ]
     ]
@@ -284,7 +282,7 @@ hovering =
 
 finalFour : List Snippet
 finalFour =
-    [ class Finals
+    [ class "Finals"
         [ flexBasis <| px 130
         , justifyContent spaceAround
         , children
@@ -292,14 +290,14 @@ finalFour =
                 [ maxWidth <| pct 80
                 , minWidth <| pct 80
                 ]
-            , class FinalLeft [ alignSelf flexStart, borderNYYN ]
-            , class FinalRight [ alignSelf flexEnd, textAlign right, borderYNNY ]
-            , class Champion [ centerize, borderYYYY, cursor default ]
-            , class Finalist []
-            , class Branding [ centerize, flexBasis <| px 150 ]
+            , class "FinalLeft" [ alignSelf flexStart, borderNYYN ]
+            , class "FinalRight" [ alignSelf flexEnd, textAlign right, borderYNNY ]
+            , class "Champion" [ centerize, borderYYYY, cursor default ]
+            , class "Finalist" []
+            , class "Branding" [ centerize, flexBasis <| px 150 ]
             ]
         ]
-    , class Randomizer
+    , class "Randomizer"
         [ centerize
         , flexBasis <| px 100
         , displayFlex
@@ -327,7 +325,7 @@ footer_ =
 
 modal : List Snippet
 modal =
-    [ id Modal
+    [ id "Modal"
         [ position absolute
         , top zero
         , left zero
@@ -340,13 +338,14 @@ modal =
         , children
             [ div
                 [ width <| px 300
-                  -- , height <| px 200
+
+                -- , height <| px 200
                 , backgroundColor <| hex "fff"
                 , borderRadius radius
                 , padding <| px 8
                 , boxShadow5 zero zero (px 10) (px 5) (hex "bbb")
                 , descendants
-                    [ class CloseButton
+                    [ class "CloseButton"
                         [ myButton
                         ]
                     , h1
@@ -362,9 +361,9 @@ modal =
     ]
 
 
-centerize : Mixin
+centerize : Style
 centerize =
-    mixin
+    batch
         [ alignSelf center
         , textAlign center
         ]
@@ -374,47 +373,47 @@ centerize =
 -- border radius
 
 
-borderYYYY : Mixin
+borderYYYY : Style
 borderYYYY =
     borderRadius radius
 
 
-borderNYYN : Mixin
+borderNYYN : Style
 borderNYYN =
     borderRadius4 px0 radius radius px0
 
 
-borderYNNY : Mixin
+borderYNNY : Style
 borderYNNY =
     borderRadius4 radius px0 px0 radius
 
 
-borderNYNN : Mixin
+borderNYNN : Style
 borderNYNN =
     borderRadius4 px0 radius px0 px0
 
 
-borderNNYN : Mixin
+borderNNYN : Style
 borderNNYN =
     borderRadius4 px0 px0 radius px0
 
 
-borderYYNN : Mixin
+borderYYNN : Style
 borderYYNN =
     borderRadius4 radius radius px0 px0
 
 
-borderNNYY : Mixin
+borderNNYY : Style
 borderNNYY =
     borderRadius4 px0 px0 radius radius
 
 
-borderYNNN : Mixin
+borderYNNN : Style
 borderYNNN =
     borderRadius4 radius px0 px0 px0
 
 
-borderNNNY : Mixin
+borderNNNY : Style
 borderNNNY =
     borderRadius4 px0 px0 px0 radius
 
@@ -443,17 +442,17 @@ lightGray =
     hex "eee"
 
 
-hoverBackgroundCurrent : Mixin
+hoverBackgroundCurrent : Style
 hoverBackgroundCurrent =
     backgroundColor grayB
 
 
-hoverColorCurrent : Mixin
+hoverColorCurrent : Style
 hoverColorCurrent =
     color almostWhite
 
 
-hoverBackgroundAncestor : Mixin
+hoverBackgroundAncestor : Style
 hoverBackgroundAncestor =
     backgroundColor grayA
 
@@ -492,9 +491,9 @@ almostWhite =
 -- button
 
 
-myButton : Mixin
+myButton : Style
 myButton =
-    mixin
+    batch
         [ padding2 (px 12) (px 12)
         , cursor pointer
         , property "user-select" "none"
@@ -526,7 +525,7 @@ myButton =
 
 randomize : List Snippet
 randomize =
-    [ class Randomizer
+    [ class "Randomizer"
         [ children
             [ div
                 [ myButton

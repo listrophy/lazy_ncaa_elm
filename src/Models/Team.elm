@@ -1,4 +1,4 @@
-module Models.Team exposing (..)
+module Models.Team exposing (Team)
 
 
 type alias Team =

@@ -1,8 +1,8 @@
 module Messages exposing (Msg(..))
 
-import Time
-import Random
 import Models
+import Random
+import Time
 
 
 type Msg
@@ -12,6 +12,6 @@ type Msg
     | ClickRandomize
     | ClearBracket
     | StartRandomizing Random.Seed
-    | RandomlyChooseNextGame Time.Time
+    | RandomlyChooseNextGame Time.Posix
     | DismissModal
     | ShowModal Models.ModalType

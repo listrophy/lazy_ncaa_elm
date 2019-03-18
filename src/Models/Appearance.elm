@@ -1,4 +1,4 @@
-module Models.Appearance exposing (..)
+module Models.Appearance exposing (Appearance, isUndecided, setAncestorHover, setHover, setWinner, sortAppearances)
 
 import Models.Team exposing (..)
 
@@ -41,6 +41,7 @@ sortAppearances appearance appearance2 =
         ( Just t1, Just t2 ) ->
             if t1.seed <= t2.seed then
                 ( appearance, appearance2 )
+
             else
                 ( appearance2, appearance )
 

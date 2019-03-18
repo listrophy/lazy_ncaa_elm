@@ -1,4 +1,4 @@
-module Models.Game exposing (..)
+module Models.Game exposing (Game, game)
 
 import Models.Team exposing (..)
 

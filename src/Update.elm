@@ -16,31 +16,49 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg ({ randomizing, bracket } as model) =
     case msg of
         ClickRandomize ->
-            model ! [ Rando.init StartRandomizing ]
+            ( model
+            , Rando.init StartRandomizing
+            )
 
         ClearBracket ->
-            { model | bracket = clearAllWinners bracket } ! []
+            ( { model | bracket = clearAllWinners bracket }
+            , Cmd.none
+            )
 
         StartRandomizing seed ->
-            startRandomizing seed model ! []
+            ( startRandomizing seed model
+            , Cmd.none
+            )
 
         RandomlyChooseNextGame _ ->
-            randomlyChooseNextGame model ! []
+            ( randomlyChooseNextGame model
+            , Cmd.none
+            )
 
         PickWinner roundNum lineNum ->
-            pickWinner model roundNum lineNum ! []
+            ( pickWinner model roundNum lineNum
+            , Cmd.none
+            )
 
         MouseEntered roundNum lineNum ->
-            { model | bracket = setHovers roundNum lineNum True bracket } ! []
+            ( { model | bracket = setHovers roundNum lineNum True bracket }
+            , Cmd.none
+            )
 
         MouseLeft roundNum lineNum ->
-            { model | bracket = setHovers roundNum lineNum False bracket } ! []
+            ( { model | bracket = setHovers roundNum lineNum False bracket }
+            , Cmd.none
+            )
 
         DismissModal ->
-            { model | showModal = Nothing } ! []
+            ( { model | showModal = Nothing }
+            , Cmd.none
+            )
 
         ShowModal x ->
-            { model | showModal = Just x } ! []
+            ( { model | showModal = Just x }
+            , Cmd.none
+            )
 
 
 setHovers : Int -> Int -> Bool -> Bracket -> Bracket
@@ -49,9 +67,9 @@ setHovers roundNum lineNum bool bracket =
         app =
             appAt roundNum lineNum
     in
-        bracket
-            |> Optional.modify app (setHover bool)
-            |> setAncestorHovers app bool
+    bracket
+        |> Optional.modify app (setHover bool)
+        |> setAncestorHovers app bool
 
 
 setAncestorHovers : Optional Bracket Appearance -> Bool -> Bracket -> Bracket
@@ -71,12 +89,12 @@ setAncestorHovers hoveredApp bool bracket =
                 (\app -> justsAreEqual teamName <| Maybe.map .name app.winner)
                 round0
     in
-        case round0LineNum of
-            Nothing ->
-                bracket
+    case round0LineNum of
+        Nothing ->
+            bracket
 
-            Just num ->
-                doSetAncestorHover 0 num teamName bool bracket
+        Just num ->
+            doSetAncestorHover 0 num teamName bool bracket
 
 
 doSetAncestorHover : Int -> Int -> Maybe String -> Bool -> Bracket -> Bracket
@@ -91,17 +109,18 @@ doSetAncestorHover roundNum lineNum teamName bool bracket =
         currTeamName =
             Maybe.map .name <| Maybe.andThen .winner app
     in
-        case app of
-            Nothing ->
-                bracket
+    case app of
+        Nothing ->
+            bracket
 
-            Just actualApp ->
-                if Maybe.withDefault False <| Maybe.map2 (==) teamName currTeamName then
-                    bracket
-                        |> Optional.modify appOptional (setAncestorHover bool)
-                        |> doSetAncestorHover (roundNum + 1) (lineNum // 2) teamName bool
-                else
-                    bracket
+        Just actualApp ->
+            if Maybe.withDefault False <| Maybe.map2 (==) teamName currTeamName then
+                bracket
+                    |> Optional.modify appOptional (setAncestorHover bool)
+                    |> doSetAncestorHover (roundNum + 1) (lineNum // 2) teamName bool
+
+            else
+                bracket
 
 
 startRandomizing : Rando -> Model -> Model
@@ -117,19 +136,19 @@ randomlyChooseNextGame model =
         nextUnchosenGame =
             Array.detectIndex2d isUndecided model.bracket
     in
-        case ( nextUnchosenGame, model.randomizing ) of
-            ( Just ( roundNum, lineNum ), Randomizing rando ) ->
-                let
-                    ( rand, nextSeed ) =
-                        Rando.step rando
-                in
-                    { model
-                        | bracket = randomlyPickWinner rand roundNum lineNum model.bracket
-                        , randomizing = Randomizing nextSeed
-                    }
+    case ( nextUnchosenGame, model.randomizing ) of
+        ( Just ( roundNum, lineNum ), Randomizing rando ) ->
+            let
+                ( rand, nextSeed ) =
+                    Rando.step rando
+            in
+            { model
+                | bracket = randomlyPickWinner rand roundNum lineNum model.bracket
+                , randomizing = Randomizing nextSeed
+            }
 
-            _ ->
-                { model | randomizing = Halted }
+        _ ->
+            { model | randomizing = Halted }
 
 
 randomlyPickWinner : Float -> Int -> Int -> Bracket -> Bracket
@@ -141,12 +160,12 @@ randomlyPickWinner rand roundNum lineNum bracket =
         appB =
             (appAt (roundNum - 1) (lineNum * 2 + 1)).getOption bracket
     in
-        case ( appA, appB ) of
-            ( Just a, Just b ) ->
-                Optional.modify (appAt roundNum lineNum) (determiner rand roundNum a b) bracket
+    case ( appA, appB ) of
+        ( Just a, Just b ) ->
+            Optional.modify (appAt roundNum lineNum) (determiner rand roundNum a b) bracket
 
-            _ ->
-                bracket
+        _ ->
+            bracket
 
 
 andThen2 : (a -> b -> Maybe c) -> Maybe a -> Maybe b -> Maybe c
@@ -166,17 +185,18 @@ determiner rand roundNum a b =
             sortAppearances a b
 
         winner =
-            andThen2 (strategy rand roundNum) (highSeed.winner) (lowSeed.winner)
+            andThen2 (strategy rand roundNum) highSeed.winner lowSeed.winner
     in
-        setWinner winner
+    setWinner winner
 
 
 strategy : Float -> Int -> Team -> Team -> Maybe Team
 strategy rand roundNum a b =
     case probabilityForHigherSeed roundNum a.seed b.seed of
         Just ( games, won ) ->
-            if (toFloat won) / (toFloat games) > rand then
+            if toFloat won / toFloat games > rand then
                 Just a
+
             else
                 Just b
 
@@ -198,7 +218,7 @@ pickWinner ({ bracket } as model) roundNum lineNum =
             newBracket
                 |> setHovers roundNum lineNum True
     in
-        { model | bracket = hoveredBracket }
+    { model | bracket = hoveredBracket }
 
 
 assignWinnerInvalidatingPreviousWinner : Int -> Int -> Maybe Team -> Bracket -> Bracket
@@ -221,6 +241,7 @@ vacateFutureWins roundNum lineNum winner bracket =
             (\x ->
                 if x == winner then
                     bracket
+
                 else
                     clearThisTeam roundNum lineNum x bracket
             )
@@ -231,19 +252,20 @@ clearThisTeam : Int -> Int -> Team -> Bracket -> Bracket
 clearThisTeam roundNum lineNum clearable bracket =
     let
         clearAppearance =
-            (\app ->
+            \app ->
                 if justsAreEqual app.winner (Just clearable) then
                     { app | winner = Nothing }
+
                 else
                     app
-            )
     in
-        if roundNum >= Array.length bracket then
-            bracket
-        else
-            bracket
-                |> Optional.modify (appAt roundNum lineNum) clearAppearance
-                |> clearThisTeam (roundNum + 1) (lineNum // 2) clearable
+    if roundNum >= Array.length bracket then
+        bracket
+
+    else
+        bracket
+            |> Optional.modify (appAt roundNum lineNum) clearAppearance
+            |> clearThisTeam (roundNum + 1) (lineNum // 2) clearable
 
 
 justsAreEqual : Maybe a -> Maybe a -> Bool

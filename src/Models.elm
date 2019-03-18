@@ -1,16 +1,15 @@
-module Models
-    exposing
-        ( Model
-        , Randomizing(..)
-        , ModalType(..)
-        , model
-        , clearAllWinners
-        )
+module Models exposing
+    ( ModalType(..)
+    , Model
+    , Randomizing(..)
+    , clearAllWinners
+    , model
+    )
 
 import Array exposing (Array)
 import Models.Appearance exposing (..)
-import Models.Team exposing (..)
 import Models.Bracket exposing (..)
+import Models.Team exposing (..)
 import Rando exposing (Rando)
 
 
@@ -47,10 +46,11 @@ clearAllWinners =
         ignoreRound0 f index =
             if index == 0 then
                 identity
+
             else
                 f
     in
-        Array.indexedMap <| ignoreRound0 (Array.map (setWinner Nothing))
+    Array.indexedMap <| ignoreRound0 (Array.map (setWinner Nothing))
 
 
 teamArray : Array Round
@@ -135,11 +135,11 @@ teamArray =
                 x :: tl ->
                     let
                         appearances =
-                            List.repeat ((List.length x) // 2) <| Appearance Nothing False False
+                            List.repeat (List.length x // 2) <| Appearance Nothing False False
                     in
-                        builder <| appearances :: l
+                    builder <| appearances :: l
     in
-        builder [ firstRound ]
-            |> List.reverse
-            |> List.map Array.fromList
-            |> Array.fromList
+    builder [ firstRound ]
+        |> List.reverse
+        |> List.map Array.fromList
+        |> Array.fromList

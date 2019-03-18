@@ -7,6 +7,7 @@ probabilityForHigherSeed : Int -> Int -> Int -> Maybe ( Int, Int )
 probabilityForHigherSeed round highSeed lowSeed =
     if highSeed == lowSeed then
         Just ( 2, 1 )
+
     else
         Dict.get ( round, highSeed, lowSeed ) dict
 

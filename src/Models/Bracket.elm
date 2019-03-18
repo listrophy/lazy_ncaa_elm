@@ -1,11 +1,11 @@
-module Models.Bracket exposing (..)
+module Models.Bracket exposing (Bracket, Round, SubRound, appAt, clearTeamAt, round0line, teamAt)
 
 import Array exposing (Array)
 import Array.Extra as Array
-import Monocle.Common as Monocle
-import Monocle.Optional as Optional exposing (Optional)
 import Models.Appearance exposing (..)
 import Models.Team exposing (..)
+import Monocle.Common as Monocle
+import Monocle.Optional as Optional exposing (Optional)
 
 
 type alias Round =
@@ -29,7 +29,7 @@ appAt roundNum lineNum =
         roundToLine =
             Monocle.array lineNum
     in
-        Optional.compose bracketToRound roundToLine
+    Optional.compose bracketToRound roundToLine
 
 
 clearTeamAt : Int -> Int -> Team -> Bracket -> Bracket
@@ -49,18 +49,18 @@ round0line team bracket =
         round0 =
             Maybe.withDefault Array.empty <| Array.get 0 bracket
     in
-        case team of
-            Nothing ->
-                Nothing
+    case team of
+        Nothing ->
+            Nothing
 
-            Just t ->
-                let
-                    teamsAreEqual mA app =
-                        case ( mA, app.winner ) of
-                            ( Just a, Just b ) ->
-                                a.name == b.name
+        Just t ->
+            let
+                teamsAreEqual mA app =
+                    case ( mA, app.winner ) of
+                        ( Just a, Just b ) ->
+                            a.name == b.name
 
-                            _ ->
-                                False
-                in
-                    Array.detectIndex (teamsAreEqual team) round0
+                        _ ->
+                            False
+            in
+            Array.detectIndex (teamsAreEqual team) round0
