@@ -16,9 +16,6 @@
     "prep": [
       "build"
     ],
-    "post": [
-      "clean-source"
-    ],
     "noprompt": true
   }
 }
